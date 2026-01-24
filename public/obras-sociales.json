@@ -1,0 +1,149 @@
+[
+  {
+    "name": "Particular",
+    "price": "$25.000"
+  },
+  {
+    "name": "Practica Particular",
+    "price": "$50.000"
+  },
+  {
+    "name": "AMUR",
+    "price": null,
+    "notes": "excepto plan verde"
+  },
+  {
+    "name": "ASOCIACIÓN TRABAJADORES DE FARMACIAS DE SANTA FE",
+    "price": null
+  },
+  {
+    "name": "CAJA DE SEGURIDAD SOCIAL PROFESIONALES DEL ARTE DE CURAR",
+    "price": null
+  },
+  {
+    "name": "CAJA FORENSE",
+    "price": null
+  },
+  {
+    "name": "CAJA DE INGENIEROS",
+    "price": null
+  },
+  {
+    "name": "CONFERENCIA EPISCOPAL ARGENTINA",
+    "price": null,
+    "notes": "MUTUAL DEL CLERO"
+  },
+  {
+    "name": "CONSEJO DE PROFESIONALES DE CIENCIAS ECONÓMICAS",
+    "price": null
+  },
+  {
+    "name": "D.A.S.U.TE.N",
+    "price": null
+  },
+  {
+    "name": "FEDERADA SALUD",
+    "price": null,
+    "notes": "Grupo 1 y Grupo 2 (Excepto GRUPO 3)"
+  },
+  {
+    "name": "GALENO S.A.",
+    "price": null
+  },
+  {
+    "name": "GRUPO SAN NICOLÁS",
+    "price": null
+  },
+  {
+    "name": "INTEGRAL SALUD",
+    "price": null
+  },
+  {
+    "name": "JERÁRQUICOS SALUD",
+    "price": null
+  },
+  {
+    "name": "OBRA SOCIAL DEL PERSONAL DE DIRECCIÓN DE LA SANIDAD LUIS PASTEUR",
+    "price": null
+  },
+  {
+    "name": "MEDICUS S.A.",
+    "price": null
+  },
+  {
+    "name": "MUTUAL AGUA Y ENERGÍA ELÉCTRICA DE SANTA FE",
+    "price": null
+  },
+  {
+    "name": "OBRA SOCIAL FUTBOLISTAS",
+    "price": null
+  },
+  {
+    "name": "O.S.P.I.F.",
+    "price": null
+  },
+  {
+    "name": "OBRA SOCIAL DEL PODER JUDICIAL DE LA NACIÓN",
+    "price": null
+  },
+  {
+    "name": "OBRA SOCIAL DE PATRONES DE CABOTAJE",
+    "price": null
+  },
+  {
+    "name": "OBRA SOCIAL U.N.L.",
+    "price": null
+  },
+  {
+    "name": "O.S.A.P.M.",
+    "price": null
+  },
+  {
+    "name": "O.P.D.E.A.",
+    "price": null
+  },
+  {
+    "name": "O.S.P.E.S.G.A.",
+    "price": null
+  },
+  {
+    "name": "OBRA SOCIAL PERSONAL DE FARMACIAS",
+    "price": null
+  },
+  {
+    "name": "OBRA SOCIAL PERSONAL MARÍTIMO",
+    "price": null
+  },
+  {
+    "name": "O.S.T.R.A.C.",
+    "price": null
+  },
+  {
+    "name": "POLICIA FEDERAL",
+    "price": null
+  },
+  {
+    "name": "PREVENCION SALUD",
+    "price": null
+  },
+  {
+    "name": "S.A.D.A.I.C.",
+    "price": null
+  },
+  {
+    "name": "SERVESALUD",
+    "price": null
+  },
+  {
+    "name": "SANCOR",
+    "price": null
+  },
+  {
+    "name": "OMINT",
+    "price": null
+  },
+  {
+    "name": "SAT",
+    "price": null
+  }
+] 

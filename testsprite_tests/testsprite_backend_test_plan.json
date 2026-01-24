@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "patient_appointment_booking",
+    "description": "Test the multi-step appointment booking form API to ensure patients can successfully book medical appointments with valid data, including date, time, visit type, and health insurance. Verify validation errors for incomplete or invalid inputs."
+  },
+  {
+    "id": "TC002",
+    "title": "provider_authentication_and_email_verification",
+    "description": "Test provider registration, login, and email verification APIs to ensure secure authentication. Verify that email verification is required before login and that JWT sessions are managed correctly."
+  },
+  {
+    "id": "TC003",
+    "title": "provider_profile_management",
+    "description": "Test provider profile management APIs including viewing and updating profile, managing work schedules, unavailable days, and changing passwords. Verify data consistency and immediate reflection of changes."
+  },
+  {
+    "id": "TC004",
+    "title": "appointment_management_and_cancellation",
+    "description": "Test appointment creation, cancellation (respecting 12-hour policy), viewing details, and sending WhatsApp notifications. Verify cancellation updates status and notifications are sent reliably."
+  },
+  {
+    "id": "TC005",
+    "title": "available_times_calculation",
+    "description": "Test the available times API to ensure it correctly calculates and returns available time slots for a provider on a given date, considering work schedules, existing appointments, and unavailable days."
+  },
+  {
+    "id": "TC006",
+    "title": "work_schedule_management",
+    "description": "Test APIs for managing provider work schedules including setting weekly schedules and time ranges. Verify validation and correct storage of schedules."
+  },
+  {
+    "id": "TC007",
+    "title": "whatsapp_notification_integration",
+    "description": "Test WhatsApp integration API to ensure automatic sending of confirmation and cancellation messages to patients upon appointment creation and cancellation."
+  },
+  {
+    "id": "TC008",
+    "title": "email_service_for_verification",
+    "description": "Test email service API using Nodemailer to verify that provider email verification emails are sent securely and reliably via Google SMTP."
+  },
+  {
+    "id": "TC009",
+    "title": "health_insurance_api",
+    "description": "Test the health insurance API endpoint to ensure it returns the correct list of valid health insurance options filtered by visit type for the appointment booking form."
+  },
+  {
+    "id": "TC010",
+    "title": "rate_limiting_on_public_endpoints",
+    "description": "Test rate limiting functionality on public API endpoints to ensure abuse prevention mechanisms are effective and fallback mechanisms work as expected."
+  }
+]

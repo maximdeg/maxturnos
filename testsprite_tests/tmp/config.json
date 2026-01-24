@@ -1,0 +1,8 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000/proveedor/login",
+  "backendAuthType": "Bearer token",
+  "backendCredential": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJtYXhpbS5kZWd0aWFyZXYuZGV2QGdtYWlsLmNvbSIsInVzZXJuYW1lIjpudWxsLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaWF0IjoxNzY5MjQ2NjE2LCJleHAiOjE3NjkzMzMwMTZ9.oeTed_apSB4xVtYFSH8qoZ6eeO9HiKPUh4s3-x4h9N4"
+}

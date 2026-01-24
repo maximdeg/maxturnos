@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 15 30% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 15 25% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 15 30% 45%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 15 30% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 15 25% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 15 30% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-gradient-to-br from-[#fff3f0] to-[#e8d4cd] text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Estilos personalizados para la aplicación */
+.appointment-form-container {
+  @apply max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg;
+}
+
+.gradient-background {
+  background: linear-gradient(135deg, #fff3f0 0%, #e8d4cd 100%);
+}
+
+/* Estilos para el calendario - Alineación de días de la semana */
+.rdp-weekdays {
+  display: flex;
+  width: 100%;
+}
+
+.rdp-weekday {
+  width: calc(100% / 7);
+  flex-shrink: 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rdp-row {
+  display: flex;
+  width: 100%;
+}
+
+.rdp-cell {
+  width: calc(100% / 7);
+  flex-shrink: 0;
+  pointer-events: auto !important; /* Permitir eventos en la celda */
+}
+
+.rdp-cell > * {
+  pointer-events: auto !important; /* Permitir eventos en hijos */
+}
+
+/* Estilos para el día de hoy con borde */
+.rdp-day_today {
+  border: 2px solid hsl(var(--primary)) !important;
+  font-weight: 600;
+}
+
+.rdp-day_today.rdp-day_selected {
+  border-color: hsl(var(--primary-foreground)) !important;
+}
+
+/* Asegurar que los días sean clickeables */
+.rdp-day {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 10;
+  user-select: none;
+}
+
+.rdp-day button,
+.rdp-day_button {
+  pointer-events: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: pointer !important;
+  z-index: 20 !important;
+  position: relative !important;
+}
+
+/* Estilos para días deshabilitados - mayor especificidad */
+.rdp-day_disabled,
+.rdp-day.rdp-day_disabled {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+}
+
+.rdp-day_disabled button,
+.rdp-day_disabled .rdp-day_button,
+.rdp-day.rdp-day_disabled button,
+.rdp-day.rdp-day_disabled .rdp-day_button {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  color: #9ca3af !important; /* gris claro */
+  background-color: transparent !important;
+  opacity: 0.5 !important;
+}
+
+.rdp-day_disabled:hover,
+.rdp-day_disabled:hover button,
+.rdp-day_disabled:hover .rdp-day_button,
+.rdp-day.rdp-day_disabled:hover,
+.rdp-day.rdp-day_disabled:hover button,
+.rdp-day.rdp-day_disabled:hover .rdp-day_button {
+  background-color: transparent !important;
+  color: #9ca3af !important;
+  opacity: 0.5 !important;
+}
+
+/* Sobrescribir cualquier estilo de texto que pueda venir de Tailwind */
+.rdp-day_disabled *,
+.rdp-day.rdp-day_disabled * {
+  color: #9ca3af !important;
+}
+
+.rdp-day:not(.rdp-day_disabled):hover {
+  background-color: hsl(var(--accent)) !important;
+}
