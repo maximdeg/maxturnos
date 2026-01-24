@@ -146,10 +146,12 @@ async function calculateAvailableTimes(userAccountId: number, date: string): Pro
 
   const blockedSlots = new Set<string>();
   for (const frame of blockedFramesResult.rows) {
-    const startTime = frame.start_time.substring(0, 5);
-    const endTime = frame.end_time.substring(0, 5);
-    const blocked = generateTimeSlots(startTime, endTime);
-    blocked.forEach(slot => blockedSlots.add(slot));
+    const startTime = (frame as any).start_time?.substring(0, 5) || '';
+    const endTime = (frame as any).end_time?.substring(0, 5) || '';
+    if (startTime && endTime) {
+      const blocked = generateTimeSlots(startTime, endTime);
+      blocked.forEach(slot => blockedSlots.add(slot));
+    }
   }
 
   // Filtrar slots disponibles

@@ -64,7 +64,6 @@ export async function POST(request: NextRequest) {
       const visitTypeMap: Record<string, number> = {
         'general_consultation': 1,
         'consulta general': 1,
-        'consulta general': 1, // Con mayúscula inicial
         'consulta': 1,
         'consultation': 1,
         'control': 1,

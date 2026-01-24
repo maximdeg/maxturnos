@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       userId: user.id, 
-      date,
+      // date,
       duration 
     }, 'Error in create unavailable day endpoint');
     logApiRequest('POST', '/api/proveedor/unavailable-days', 500, duration);

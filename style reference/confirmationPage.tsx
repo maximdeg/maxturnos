@@ -8,7 +8,7 @@ import { es } from "date-fns/locale";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import FooterRoot from "@/components/agendar-visita/FooterRoot";
-import { generateCancellationUrl, getCancellationExpirationTime } from "@/lib/cancellation-token";
+// import { generateCancellationUrl, getCancellationExpirationTime } from "@/lib/cancellation-token";
 
 const ConfirmationPage = () => {
     const searchParams = useSearchParams();
