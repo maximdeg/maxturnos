@@ -46,12 +46,12 @@ function Calendar({
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-2 top-1"
         ),
-        table: "w-full border-collapse",
-        weekdays: "flex w-full",
+        table: "w-full border-collapse table-fixed",
+        weekdays: "w-full",
         weekday:
-          "text-muted-foreground rounded-md w-[calc(100%/7)] h-9 font-normal text-[0.8rem] uppercase text-center flex items-center justify-center p-0 flex-shrink-0",
-        row: "flex w-full mt-2",
-        cell: "h-9 w-[calc(100%/7)] text-center text-sm p-0 relative flex items-center justify-center flex-shrink-0 [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+          "text-muted-foreground rounded-md h-9 font-normal text-[0.8rem] uppercase text-center p-0 m-0 box-border",
+        row: "w-full mt-2",
+        cell: "h-9 flex-[0_0_calc(100%/7)] w-[calc(100%/7)] max-w-[calc(100%/7)] min-w-0 text-center text-sm p-0 m-0 relative flex items-center justify-center flex-shrink-0 flex-grow-0 box-border [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: "h-9 w-9 p-0 font-normal rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none aria-selected:opacity-100 cursor-pointer",
         day_range_end: "day-range-end",
         day_selected:
@@ -59,7 +59,7 @@ function Calendar({
         day_today: "bg-accent text-accent-foreground font-semibold",
         day_outside:
           "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-        day_disabled: "cursor-not-allowed",
+        disabled: "cursor-not-allowed !bg-gray-100 !text-gray-400 !border !border-gray-200 hover:!bg-gray-100 hover:!text-gray-400",
         day_range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",

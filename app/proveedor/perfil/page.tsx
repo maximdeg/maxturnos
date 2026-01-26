@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Calendar, Clock, User, Settings, Plus, Trash2, CheckCircle2, XCircle, Phone, Mail } from 'lucide-react';
+import { Loader2, Calendar, Clock, User, Settings, Plus, Trash2, CheckCircle2, XCircle, Phone, Mail, X, Check, CheckCheck, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format, parseISO } from 'date-fns';
@@ -29,6 +29,7 @@ interface Appointment {
   status: 'scheduled' | 'cancelled' | 'completed';
   whatsapp_sent: boolean;
   whatsapp_sent_at: string | null;
+  whatsapp_message_id: string | null;
   created_at: string;
 }
 
@@ -290,6 +291,8 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const queryClient = useQueryClient();
 
   const appointments: Appointment[] = data?.appointments || [];
 
@@ -300,6 +303,62 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
     return true;
   });
 
+  // Mutation para cancelar cita
+  const cancelAppointmentMutation = useMutation({
+    mutationFn: async (appointmentId: number) => {
+      const response = await fetch(`/api/appointments/${appointmentId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cancelled_by: 'provider' }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al cancelar la cita');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success('Cita cancelada exitosamente. Se envió un mensaje al paciente.');
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      setCancellingId(null);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Error al cancelar la cita');
+      setCancellingId(null);
+    },
+  });
+
+  const handleCancelAppointment = (appointmentId: number) => {
+    if (window.confirm('¿Estás seguro de que deseas cancelar esta cita? Se enviará un mensaje al paciente.')) {
+      setCancellingId(appointmentId);
+      cancelAppointmentMutation.mutate(appointmentId);
+    }
+  };
+
+  // Función para obtener el estado del mensaje WhatsApp
+  const getWhatsAppStatus = (apt: Appointment) => {
+    if (!apt.whatsapp_sent) {
+      return { icon: null, text: '', color: '' };
+    }
+    // Si tiene whatsapp_sent_at, significa que fue recibido (doble check)
+    if (apt.whatsapp_sent_at) {
+      return { 
+        icon: CheckCheck, 
+        text: 'Mensaje recibido', 
+        color: 'text-blue-600' 
+      };
+    }
+    // Si solo tiene whatsapp_sent pero no whatsapp_sent_at, fue enviado pero no confirmado (check simple)
+    return { 
+      icon: Check, 
+      text: 'Mensaje enviado', 
+      color: 'text-gray-600' 
+    };
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -308,7 +367,7 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="status">Estado</Label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -354,52 +413,81 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
           </p>
         ) : (
           <div className="space-y-2">
-            {filteredAppointments.map((apt: Appointment) => (
-              <Card key={apt.id} className="p-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{apt.patient_name}</h3>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        apt.status === 'scheduled' ? 'bg-green-100 text-green-800' :
-                        apt.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {apt.status === 'scheduled' ? 'Programada' :
-                         apt.status === 'cancelled' ? 'Cancelada' : 'Completada'}
-                      </span>
+            {filteredAppointments.map((apt: Appointment) => {
+              const whatsappStatus = getWhatsAppStatus(apt);
+              const StatusIcon = whatsappStatus.icon;
+              
+              return (
+                <Card key={apt.id} className="p-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <h3 className="font-semibold text-base sm:text-lg truncate">{apt.patient_name}</h3>
+                        <span className={`text-xs px-2 py-1 rounded self-start ${
+                          apt.status === 'scheduled' ? 'bg-green-100 text-green-800' :
+                          apt.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {apt.status === 'scheduled' ? 'Programada' :
+                           apt.status === 'cancelled' ? 'Cancelada' : 'Completada'}
+                        </span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{format(parseISO(apt.appointment_date), 'dd/MM/yyyy')}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{formatTime24(apt.appointment_time)}</span>
+                        </span>
+                        <span className="flex items-center gap-1 min-w-0">
+                          <Phone className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{apt.patient_phone}</span>
+                        </span>
+                      </div>
+                      <div className="text-sm break-words">
+                        <span className="font-medium">{apt.visit_type}</span>
+                        {apt.consult_type && ` - ${apt.consult_type}`}
+                        {apt.practice_type && ` - ${apt.practice_type}`}
+                        {' • '}
+                        <span>{apt.health_insurance}</span>
+                      </div>
+                      {StatusIcon && (
+                        <div className={`flex items-center gap-1 text-xs ${whatsappStatus.color}`}>
+                          <StatusIcon className="h-3 w-3 flex-shrink-0" />
+                          <span>{whatsappStatus.text}</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {format(parseISO(apt.appointment_date), 'dd/MM/yyyy')}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {formatTime24(apt.appointment_time)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Phone className="h-4 w-4" />
-                        {apt.patient_phone}
-                      </span>
-                    </div>
-                    <div className="text-sm">
-                      <span className="font-medium">{apt.visit_type}</span>
-                      {apt.consult_type && ` - ${apt.consult_type}`}
-                      {apt.practice_type && ` - ${apt.practice_type}`}
-                      {' • '}
-                      <span>{apt.health_insurance}</span>
-                    </div>
-                    {apt.whatsapp_sent && (
-                      <div className="flex items-center gap-1 text-xs text-green-600">
-                        <CheckCircle2 className="h-3 w-3" />
-                        WhatsApp enviado
+                    {apt.status === 'scheduled' && (
+                      <div className="flex-shrink-0 sm:ml-4">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleCancelAppointment(apt.id)}
+                          disabled={cancellingId === apt.id || cancelAppointmentMutation.isPending}
+                          className="w-full sm:w-auto"
+                        >
+                          {cancellingId === apt.id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <span className="hidden sm:inline">Cancelando...</span>
+                              <span className="sm:hidden">Cancelando...</span>
+                            </>
+                          ) : (
+                            <>
+                              <X className="mr-2 h-4 w-4" />
+                              <span>Cancelar</span>
+                            </>
+                          )}
+                        </Button>
                       </div>
                     )}
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </CardContent>

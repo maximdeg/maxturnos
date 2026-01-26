@@ -69,28 +69,64 @@
 }
 
 /* Estilos para el calendario - Alineación de días de la semana */
-.rdp-weekdays {
-  display: flex;
-  width: 100%;
+/* react-day-picker usa estructura de tabla: table > thead > tr > th */
+.rdp-table thead tr,
+.rdp-weekdays,
+.rdp-weekdays_row {
+  display: table-row !important;
+  width: 100% !important;
+  margin-bottom: 0.25rem !important;
 }
 
+.rdp-table thead tr th,
 .rdp-weekday {
-  width: calc(100% / 7);
-  flex-shrink: 0;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: table-cell !important;
+  width: calc(100% / 7) !important;
+  min-width: 0 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.8rem !important;
+  font-weight: normal !important;
+  text-transform: uppercase !important;
+  height: 2.25rem !important;
 }
 
+/* Forzar que la tabla use ancho completo y distribución uniforme */
+.rdp-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
+
+.rdp-table thead {
+  width: 100% !important;
+}
+
+.rdp-table thead tr {
+  width: 100% !important;
+  display: table-row !important;
+}
+
+.rdp-table tbody tr,
 .rdp-row {
-  display: flex;
-  width: 100%;
+  display: table-row !important;
+  width: 100% !important;
+  margin-top: 0.5rem !important;
 }
 
+.rdp-table tbody tr td,
 .rdp-cell {
-  width: calc(100% / 7);
-  flex-shrink: 0;
+  display: table-cell !important;
+  width: calc(100% / 7) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
   pointer-events: auto !important; /* Permitir eventos en la celda */
 }
 
@@ -127,42 +163,150 @@
   position: relative !important;
 }
 
-/* Estilos para días deshabilitados - mayor especificidad */
-.rdp-day_disabled,
-.rdp-day.rdp-day_disabled {
+/* Estilos para días deshabilitados - react-day-picker v9 usa 'disabled' en lugar de 'day_disabled' */
+/* Aplicar a todos los posibles selectores para máxima compatibilidad */
+.rdp-disabled,
+.rdp-day_button.rdp-disabled,
+.rdp-day.rdp-disabled,
+.rdp-cell .rdp-day_button.rdp-disabled,
+.rdp-cell .rdp-day.rdp-disabled,
+button.rdp-disabled,
+button.rdp-day_button.rdp-disabled {
   pointer-events: none !important;
   cursor: not-allowed !important;
-  opacity: 0.5 !important;
+  position: relative !important;
+  color: #9ca3af !important; /* Gris más visible */
+  background-color: #f3f4f6 !important; /* Fondo gris claro */
+  opacity: 0.6 !important;
+  border: 1px solid #e5e7eb !important; /* Borde gris */
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  font-weight: normal !important;
 }
 
-.rdp-day_disabled button,
-.rdp-day_disabled .rdp-day_button,
-.rdp-day.rdp-day_disabled button,
-.rdp-day.rdp-day_disabled .rdp-day_button {
+/* Estilos específicos para botones dentro de días deshabilitados */
+.rdp-disabled button,
+.rdp-day_button.rdp-disabled button,
+.rdp-day.rdp-disabled button,
+.rdp-day_button.rdp-disabled,
+.rdp-day.rdp-disabled .rdp-day_button,
+.rdp-day[aria-disabled="true"] button,
+.rdp-day_button[aria-disabled="true"],
+.rdp-day_button[disabled],
+.rdp-cell .rdp-day_button.rdp-disabled,
+.rdp-cell .rdp-day.rdp-disabled button,
+button.rdp-disabled,
+button.rdp-day_button.rdp-disabled {
   pointer-events: none !important;
   cursor: not-allowed !important;
-  color: #9ca3af !important; /* gris claro */
-  background-color: transparent !important;
-  opacity: 0.5 !important;
+  color: #9ca3af !important; /* Gris más visible */
+  background-color: #f3f4f6 !important; /* Fondo gris claro */
+  opacity: 0.6 !important;
+  border: 1px solid #e5e7eb !important; /* Borde gris */
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  font-weight: normal !important;
 }
 
-.rdp-day_disabled:hover,
-.rdp-day_disabled:hover button,
-.rdp-day_disabled:hover .rdp-day_button,
-.rdp-day.rdp-day_disabled:hover,
-.rdp-day.rdp-day_disabled:hover button,
-.rdp-day.rdp-day_disabled:hover .rdp-day_button {
-  background-color: transparent !important;
-  color: #9ca3af !important;
-  opacity: 0.5 !important;
+/* Estado hover para días deshabilitados - sin cambios visuales */
+.rdp-disabled:hover,
+.rdp-day_button.rdp-disabled:hover,
+.rdp-day.rdp-disabled:hover,
+.rdp-day_button.rdp-disabled:hover button,
+.rdp-day.rdp-disabled:hover button,
+.rdp-day[aria-disabled="true"]:hover,
+.rdp-day_button[aria-disabled="true"]:hover,
+.rdp-day[disabled]:hover,
+.rdp-day_button[disabled]:hover,
+.rdp-cell .rdp-day_button.rdp-disabled:hover,
+.rdp-cell .rdp-day.rdp-disabled:hover button {
+  background-color: #f3f4f6 !important; /* Mantener fondo gris */
+  color: #9ca3af !important; /* Mantener texto gris */
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Estado focus para días deshabilitados - sin outline */
+.rdp-disabled:focus,
+.rdp-day_button.rdp-disabled:focus,
+.rdp-day.rdp-disabled:focus,
+.rdp-day_button.rdp-disabled:focus button,
+.rdp-day.rdp-disabled:focus button,
+.rdp-day[aria-disabled="true"]:focus,
+.rdp-day_button[aria-disabled="true"]:focus,
+.rdp-day[disabled]:focus,
+.rdp-day_button[disabled]:focus,
+.rdp-cell .rdp-day_button.rdp-disabled:focus,
+.rdp-cell .rdp-day.rdp-disabled:focus button {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: #f3f4f6 !important; /* Mantener fondo gris */
+  color: #9ca3af !important; /* Mantener texto gris */
 }
 
 /* Sobrescribir cualquier estilo de texto que pueda venir de Tailwind */
-.rdp-day_disabled *,
-.rdp-day.rdp-day_disabled * {
-  color: #9ca3af !important;
+.rdp-disabled *,
+.rdp-day_button.rdp-disabled *,
+.rdp-day.rdp-disabled *,
+.rdp-day[aria-disabled="true"] *,
+.rdp-day_button[aria-disabled="true"] *,
+.rdp-day[disabled] *,
+.rdp-day_button[disabled] *,
+.rdp-cell .rdp-day_button.rdp-disabled *,
+.rdp-cell .rdp-day.rdp-disabled * {
+  color: #9ca3af !important; /* Gris más visible */
 }
 
-.rdp-day:not(.rdp-day_disabled):hover {
+/* Asegurar que los días deshabilitados no tengan efectos de hover o active */
+.rdp-disabled:active,
+.rdp-day_button.rdp-disabled:active,
+.rdp-day.rdp-disabled:active,
+.rdp-day[aria-disabled="true"]:active,
+.rdp-day_button[aria-disabled="true"]:active,
+.rdp-day[disabled]:active,
+.rdp-day_button[disabled]:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Estilos para días habilitados - asegurar que sean claramente diferentes */
+.rdp-day:not(.rdp-disabled) button,
+.rdp-day:not(.rdp-disabled) .rdp-day_button,
+.rdp-day_button:not(.rdp-disabled),
+button.rdp-day_button:not(.rdp-disabled) {
+  color: hsl(var(--foreground)) !important;
+  background-color: transparent !important;
+}
+
+.rdp-day:not(.rdp-disabled):hover,
+.rdp-day_button:not(.rdp-disabled):hover,
+button.rdp-day_button:not(.rdp-disabled):hover {
   background-color: hsl(var(--accent)) !important;
+}
+
+.rdp-day:not(.rdp-disabled):hover button,
+.rdp-day:not(.rdp-disabled):hover .rdp-day_button,
+.rdp-day_button:not(.rdp-disabled):hover,
+button.rdp-day_button:not(.rdp-disabled):hover {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+/* Estilo general para cualquier elemento disabled dentro del calendario */
+.rdp button.rdp-disabled,
+.rdp .rdp-day_button.rdp-disabled,
+.rdp button[aria-disabled="true"],
+.rdp button[disabled] {
+  color: #9ca3af !important;
+  background-color: #f3f4f6 !important;
+  opacity: 0.6 !important;
+  border: 1px solid #e5e7eb !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }

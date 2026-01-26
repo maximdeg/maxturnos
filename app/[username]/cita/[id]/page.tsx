@@ -148,8 +148,20 @@ export default function AppointmentDetailsPage() {
     }
   };
 
+  // Función para formatear fecha sin problemas de zona horaria
+  // appointment_date viene como string "YYYY-MM-DD" desde el API
+  const formatDateWithoutTimezone = (dateString: string): string => {
+    if (!dateString) return dateString;
+    
+    // Parsear la fecha como fecha local (no UTC) para evitar problemas de zona horaria
+    const [year, month, day] = dateString.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day); // month es 0-indexed en Date
+    
+    return format(localDate, "dd 'de' MMMM 'de' yyyy", { locale: es });
+  };
+
   const formattedDate = appointment.appointment_date 
-    ? format(new Date(appointment.appointment_date), "dd 'de' MMMM 'de' yyyy", { locale: es })
+    ? formatDateWithoutTimezone(appointment.appointment_date)
     : appointment.appointment_date;
 
   return (
