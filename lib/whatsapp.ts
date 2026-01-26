@@ -103,6 +103,7 @@ export async function sendAppointmentConfirmation(
   phoneNumber: string,
   appointmentDetails: {
     patientName: string;
+    providerName: string;
     date: string; // YYYY-MM-DD
     time: string; // HH:MM
     visitType: string;
@@ -117,14 +118,14 @@ export async function sendAppointmentConfirmation(
   
   const message = `¡Hola ${appointmentDetails.patientName}!
 
-Tu cita ha sido confirmada exitosamente.
+Tu visita con ${appointmentDetails.providerName} ha sido confirmada exitosamente.
 
 📅 Fecha: ${appointmentDetails.date}
 🕐 Hora: ${appointmentDetails.time}
 👨‍⚕️ Tipo: ${visitTypeText}${subTypeText ? ` - ${subTypeText}` : ''}
 🏥 Obra Social: ${appointmentDetails.healthInsurance}
 
-Para ver los detalles de tu cita o cancelarla, visita:
+Para ver los detalles de tu cita o cancelarla, visita el siguiente enlace:
 ${appointmentDetails.detailsUrl}
 
 ¡Te esperamos!`;

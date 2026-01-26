@@ -422,9 +422,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el proveedor existe
+    // Verificar que el proveedor existe y obtener su información
     const providerCheck = await pool.query(
-      'SELECT id, username FROM user_accounts WHERE id = $1',
+      'SELECT id, username, first_name, last_name FROM user_accounts WHERE id = $1',
       [data.user_account_id]
     );
 
@@ -438,6 +438,9 @@ export async function POST(request: NextRequest) {
     }
 
     const providerUsername = providerCheck.rows[0].username;
+    const providerName = providerCheck.rows[0].first_name && providerCheck.rows[0].last_name
+      ? `${providerCheck.rows[0].first_name} ${providerCheck.rows[0].last_name}`
+      : providerCheck.rows[0].first_name || providerCheck.rows[0].last_name || providerUsername;
 
     // Verificar si ya existe una cita duplicada activa
     const phoneCleaned = cleanPhoneNumber(data.phone_number);
@@ -538,7 +541,9 @@ export async function POST(request: NextRequest) {
     );
 
     const appointment = appointmentResult.rows[0];
-    const appointmentDetailsUrl = `${APP_URL}/${providerUsername}/cita/${result.appointmentId}?token=${result.cancellationToken}`;
+    // Usar NEXT_PUBLIC_APP_URL para construir la URL (ya está en APP_URL, pero asegurémonos)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || APP_URL;
+    const appointmentDetailsUrl = `${baseUrl}/${providerUsername}/cita/${result.appointmentId}?token=${result.cancellationToken}`;
 
     // Enviar WhatsApp de confirmación (no bloquea si falla)
     try {
@@ -546,6 +551,7 @@ export async function POST(request: NextRequest) {
         appointment.phone_number,
         {
           patientName: `${appointment.first_name} ${appointment.last_name}`,
+          providerName: providerName,
           date: appointment.appointment_date.toISOString().split('T')[0],
           time: appointment.appointment_time.substring(0, 5),
           visitType: appointment.visit_type_name,
