@@ -1,5 +1,5 @@
 /**
- * Integración con WhatsApp usando Whapi
+ * Integración con WhatsApp usando UltraMsg
  * 
  * Funciones para enviar mensajes de confirmación y cancelación
  * de citas vía WhatsApp.
@@ -10,13 +10,23 @@ import { WhatsAppMessage, WhatsAppResponse } from './types';
 import { logger, whatsappLogger } from './logger';
 import { cleanPhoneNumber } from './utils';
 
-const WHAPI_API_URL = process.env.WHAPI_API_URL || 'https://api.whapi.cloud';
-const WHAPI_API_TOKEN = process.env.WHAPI_API_TOKEN;
-const WHAPI_PHONE_NUMBER_ID = process.env.WHAPI_PHONE_NUMBER_ID;
+// UltraMsg API configuration
+// ULTRAMSG_API_URL puede venir con o sin el instance_id
+// Formato esperado: https://api.ultramsg.com o https://api.ultramsg.com/instance160031
+const ULTRAMSG_API_URL_RAW = process.env.ULTRAMSG_API_URL || 'https://api.ultramsg.com';
+const ULTRAMSG_INSTANCE_ID = process.env.ULTRAMSG_INSTANCE_ID;
+const ULTRAMSG_API_TOKEN = process.env.ULTRAMSG_API_TOKEN;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
+// Normalizar la URL base (remover instance_id si está incluido)
+let ULTRAMSG_API_URL = ULTRAMSG_API_URL_RAW;
+if (ULTRAMSG_API_URL.includes('/instance')) {
+  // Si la URL incluye /instance, extraer solo la parte base
+  ULTRAMSG_API_URL = ULTRAMSG_API_URL.split('/instance')[0];
+}
+
 /**
- * Envía un mensaje de WhatsApp genérico
+ * Envía un mensaje de WhatsApp genérico usando UltraMsg API
  * 
  * @param phoneNumber Número de teléfono del destinatario
  * @param message Mensaje a enviar
@@ -26,9 +36,9 @@ export async function sendWhatsAppMessage(
   phoneNumber: string,
   message: string
 ): Promise<WhatsAppResponse> {
-  if (!WHAPI_API_TOKEN || !WHAPI_PHONE_NUMBER_ID) {
-    const error = 'Whapi credentials not configured';
-    whatsappLogger.error({ error }, 'Whapi configuration missing');
+  if (!ULTRAMSG_API_TOKEN || !ULTRAMSG_INSTANCE_ID) {
+    const error = 'UltraMsg credentials not configured';
+    whatsappLogger.error({ error }, 'UltraMsg configuration missing');
     return {
       success: false,
       error,
@@ -42,29 +52,39 @@ export async function sendWhatsAppMessage(
     // Asegurar que tenga código de país (agregar + si no lo tiene)
     const formattedPhone = cleanedPhone.startsWith('+') ? cleanedPhone : `+${cleanedPhone}`;
 
+    // Construir URL de la API de UltraMsg
+    const apiUrl = `${ULTRAMSG_API_URL}/${ULTRAMSG_INSTANCE_ID}/messages/chat`;
+
+    // UltraMsg requiere parámetros como form-urlencoded o query params
+    const params = new URLSearchParams({
+      token: ULTRAMSG_API_TOKEN,
+      to: formattedPhone,
+      body: message,
+    });
+
     const response = await axios.post(
-      `${WHAPI_API_URL}/messages`,
-      {
-        to: formattedPhone,
-        body: message,
-        phone: WHAPI_PHONE_NUMBER_ID,
-      },
+      apiUrl,
+      params.toString(),
       {
         headers: {
-          Authorization: `Bearer ${WHAPI_API_TOKEN}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
       }
     );
 
-    whatsappLogger.info({ phoneNumber: formattedPhone }, 'WhatsApp message sent successfully');
+    whatsappLogger.info({ phoneNumber: formattedPhone, messageId: response.data.id }, 'WhatsApp message sent successfully via UltraMsg');
 
-    return {
-      success: true,
-      messageId: response.data.id || response.data.message_id,
-    };
+    // UltraMsg responde con: {"sent":"true","message":"ok","id":44897}
+    if (response.data.sent === 'true' || response.data.sent === true) {
+      return {
+        success: true,
+        messageId: String(response.data.id),
+      };
+    } else {
+      throw new Error(response.data.message || 'Message not sent');
+    }
   } catch (error: any) {
-    whatsappLogger.error({ error, phoneNumber }, 'Error sending WhatsApp message');
+    whatsappLogger.error({ error, phoneNumber, errorResponse: error.response?.data }, 'Error sending WhatsApp message via UltraMsg');
     return {
       success: false,
       error: error.response?.data?.message || error.message || 'Failed to send message',
@@ -146,5 +166,5 @@ Disculpa las molestias.`;
  * @returns true si está configurado correctamente, false si no
  */
 export function isWhatsAppConfigured(): boolean {
-  return !!(WHAPI_API_TOKEN && WHAPI_PHONE_NUMBER_ID);
+  return !!(ULTRAMSG_API_TOKEN && ULTRAMSG_INSTANCE_ID);
 }

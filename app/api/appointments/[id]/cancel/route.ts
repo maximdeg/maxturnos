@@ -159,7 +159,7 @@ export async function POST(
         const providerUsername = await getUsernameByUserAccountId(appointment.user_account_id);
         const rescheduleUrl = `${APP_URL}/${providerUsername}/agendar-visita`;
 
-        await sendProviderCancellationNotification(
+        const whatsappResult = await sendProviderCancellationNotification(
           appointment.phone_number,
           {
             patientName: `${appointment.first_name} ${appointment.last_name}`,
@@ -168,6 +168,18 @@ export async function POST(
             rescheduleUrl,
           }
         );
+
+        // Actualizar estado de WhatsApp si se envió exitosamente
+        if (whatsappResult.success && whatsappResult.messageId) {
+          await pool.query(
+            `UPDATE appointments 
+             SET whatsapp_sent = true, 
+                 whatsapp_sent_at = CURRENT_TIMESTAMP,
+                 whatsapp_message_id = $1
+             WHERE id = $2`,
+            [whatsappResult.messageId, appointmentId]
+          );
+        }
       } catch (whatsappError) {
         apiLogger.error({ error: whatsappError, appointmentId }, 'Error sending cancellation WhatsApp');
         // No fallar la cancelación si WhatsApp falla
