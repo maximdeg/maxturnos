@@ -11,7 +11,16 @@ import { apiLogger, logApiRequest } from '@/lib/logger';
 import { isValidPhoneNumber, cleanPhoneNumber } from '@/lib/utils';
 import { z } from 'zod';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+// Obtener URL base de la aplicación - usar directamente NEXT_PUBLIC_APP_URL
+const getAppUrl = (): string => {
+  const url = process.env.NEXT_PUBLIC_APP_URL;
+  if (!url) {
+    apiLogger.warn('NEXT_PUBLIC_APP_URL not set, using localhost fallback');
+    return 'http://localhost:3000';
+  }
+  // Remover barra final si existe para evitar dobles barras
+  return url.endsWith('/') ? url.slice(0, -1) : url;
+};
 
 const createAppointmentSchema = z.object({
   first_name: z.string().min(2, 'Nombre debe tener al menos 2 caracteres'),
@@ -541,9 +550,12 @@ export async function POST(request: NextRequest) {
     );
 
     const appointment = appointmentResult.rows[0];
-    // Usar NEXT_PUBLIC_APP_URL para construir la URL (ya está en APP_URL, pero asegurémonos)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || APP_URL;
+    // Construir URL usando NEXT_PUBLIC_APP_URL directamente
+    const baseUrl = getAppUrl();
     const appointmentDetailsUrl = `${baseUrl}/${providerUsername}/cita/${result.appointmentId}?token=${result.cancellationToken}`;
+    
+    // Log para debugging
+    apiLogger.info({ baseUrl, appointmentDetailsUrl, envUrl: process.env.NEXT_PUBLIC_APP_URL }, 'Constructing appointment details URL');
 
     // Enviar WhatsApp de confirmación (no bloquea si falla)
     try {

@@ -9,7 +9,16 @@ import { requireAuth } from '@/lib/auth';
 import { apiLogger, logApiRequest } from '@/lib/logger';
 import { z } from 'zod';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+// Obtener URL base de la aplicación - usar directamente NEXT_PUBLIC_APP_URL
+const getAppUrl = (): string => {
+  const url = process.env.NEXT_PUBLIC_APP_URL;
+  if (!url) {
+    apiLogger.warn('NEXT_PUBLIC_APP_URL not set, using localhost fallback');
+    return 'http://localhost:3000';
+  }
+  // Remover barra final si existe para evitar dobles barras
+  return url.endsWith('/') ? url.slice(0, -1) : url;
+};
 
 const cancelSchema = z.object({
   token: z.string().optional(),
@@ -157,7 +166,8 @@ export async function POST(
     if (cancelled_by === 'provider') {
       try {
         const providerUsername = await getUsernameByUserAccountId(appointment.user_account_id);
-        const rescheduleUrl = `${APP_URL}/${providerUsername}/agendar-visita`;
+        const baseUrl = getAppUrl();
+        const rescheduleUrl = `${baseUrl}/${providerUsername}/agendar-visita`;
 
         const whatsappResult = await sendProviderCancellationNotification(
           appointment.phone_number,
