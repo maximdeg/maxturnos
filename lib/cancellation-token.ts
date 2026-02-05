@@ -2,10 +2,13 @@
  * Sistema de Tokens de Cancelación JWT
  * 
  * Genera y valida tokens JWT para cancelación segura de citas.
- * Los tokens expiran 12 horas antes del horario de la cita.
+ * Los tokens expiran 24 horas antes del horario de la cita.
  */
 
 import jwt from 'jsonwebtoken';
+
+/** Política de cancelación: mínimo de horas de anticipación antes del horario de la cita */
+const CANCELLATION_HOURS_BEFORE = 24;
 import { CancellationTokenPayload } from './types';
 import { logger } from './logger';
 
@@ -23,7 +26,7 @@ const JWT_SECRET_ASSERTED: string = JWT_SECRET || 'temp-secret-min-32-chars-for-
 /**
  * Genera un token de cancelación JWT para una cita
  * 
- * El token expira 12 horas antes del horario de la cita.
+ * El token expira 24 horas antes del horario de la cita.
  * 
  * @param payload Datos de la cita para incluir en el token
  * @returns Token JWT firmado
@@ -40,9 +43,9 @@ export function generateCancellationToken(payload: {
   }
 
   try {
-    // Calcular expiración: 12 horas antes del horario de la cita
+    // Calcular expiración: 24 horas antes del horario de la cita
     const appointmentDateTime = new Date(`${payload.appointmentDate}T${payload.appointmentTime}`);
-    const expirationTime = new Date(appointmentDateTime.getTime() - 12 * 60 * 60 * 1000); // 12 horas antes
+    const expirationTime = new Date(appointmentDateTime.getTime() - CANCELLATION_HOURS_BEFORE * 60 * 60 * 1000);
     
     // Si la expiración ya pasó, usar 1 hora desde ahora como mínimo
     const now = new Date();
@@ -97,8 +100,8 @@ export function verifyCancellationToken(token: string): CancellationTokenPayload
  * 
  * Verifica que:
  * 1. El token sea válido
- * 2. No haya expirado (12 horas antes de la cita)
- * 3. La cita esté al menos 12 horas en el futuro
+ * 2. No haya expirado (24 horas antes de la cita)
+ * 3. La cita esté al menos 24 horas en el futuro
  * 
  * @param token Token de cancelación
  * @returns true si puede cancelarse, false si no
@@ -110,12 +113,12 @@ export function canCancelAppointment(token: string): boolean {
     return false;
   }
 
-  // Verificar que la cita esté al menos 12 horas en el futuro
+  // Verificar que la cita esté al menos 24 horas en el futuro
   const appointmentDateTime = new Date(`${payload.appointmentDate}T${payload.appointmentTime}`);
   const now = new Date();
   const hoursUntilAppointment = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-  return hoursUntilAppointment >= 12;
+  return hoursUntilAppointment >= CANCELLATION_HOURS_BEFORE;
 }
 
 /**

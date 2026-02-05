@@ -21,8 +21,14 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
-  const startDate = searchParams.get('start_date');
-  const endDate = searchParams.get('end_date');
+  const dateParam = searchParams.get('date'); // Filtro por un solo día (alias de start_date/end_date)
+  let startDate = searchParams.get('start_date');
+  let endDate = searchParams.get('end_date');
+  if (dateParam && !startDate && !endDate) {
+    startDate = dateParam;
+    endDate = dateParam;
+  }
+  const formatArray = searchParams.get('format') === 'array';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
   const offset = (page - 1) * limit;
@@ -118,6 +124,10 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
     logApiRequest('GET', '/api/proveedor/appointments', 200, duration);
 
+    // Compatibilidad: si solo se pide date (o date + format=array), devolver lista directa
+    if (formatArray || (dateParam && !searchParams.get('page') && !searchParams.get('limit'))) {
+      return NextResponse.json(appointments);
+    }
     return NextResponse.json({
       appointments,
       total,

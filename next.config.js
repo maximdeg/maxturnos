@@ -9,6 +9,14 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
+  webpack: (config, { isServer }) => {
+    // Suprimir warning de pg-native (dependencia opcional de pg, no usada en runtime)
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('pg-native');
+    }
+    return config;
+  },
 }
 
 module.exports = nextConfig

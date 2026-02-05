@@ -315,8 +315,8 @@ export default function AppointmentDetailsPage() {
                   </h3>
                   <p className="text-red-700 text-sm">
                     {appointment.can_cancel 
-                      ? 'Si necesita cancelar, hágalo con al menos 12 horas de anticipación. Respete que quizás otro paciente necesite un turno más cercano y el tiempo del profesional.'
-                      : 'Esta cita no puede cancelarse porque faltan menos de 12 horas para el horario programado.'}
+                      ? 'Si necesita cancelar, hágalo con al menos 24 horas de anticipación. Respete que quizás otro paciente necesite un turno más cercano y el tiempo del profesional.'
+                      : 'Esta cita no puede cancelarse porque faltan menos de 24 horas para el horario programado.'}
                   </p>
                 </div>
               </div>
@@ -374,7 +374,7 @@ export default function AppointmentDetailsPage() {
                     ¿Necesita cancelar su cita?
                   </h3>
                   <p className="text-sm text-yellow-700 mb-3">
-                    Puede cancelar esta cita hasta 12 horas antes del horario programado.
+                    Puede cancelar esta cita hasta 24 horas antes del horario programado.
                   </p>
                   <Button
                     variant="destructive"
@@ -403,7 +403,7 @@ export default function AppointmentDetailsPage() {
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    Esta cita no puede cancelarse porque faltan menos de 12 horas para el horario programado.
+                    Esta cita no puede cancelarse porque faltan menos de 24 horas para el horario programado.
                   </AlertDescription>
                 </Alert>
               </div>

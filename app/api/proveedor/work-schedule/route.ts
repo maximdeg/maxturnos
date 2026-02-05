@@ -3,6 +3,24 @@ import { pool } from '@/lib/db';
 import { requireAuth } from '@/lib/auth';
 import { apiLogger, logApiRequest } from '@/lib/logger';
 
+/** POST no soportado: usar PUT por día. Devuelve 405 con Allow. */
+export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const authHeader = request.headers.get('authorization');
+  const user = await requireAuth(authHeader);
+  if (!user) {
+    const duration = Date.now() - startTime;
+    logApiRequest('POST', '/api/proveedor/work-schedule', 401, duration);
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
+  const duration = Date.now() - startTime;
+  logApiRequest('POST', '/api/proveedor/work-schedule', 405, duration);
+  return NextResponse.json(
+    { error: 'Método no permitido. Use GET para consultar o PUT /api/proveedor/work-schedule/[day_of_week] para actualizar por día.' },
+    { status: 405, headers: { Allow: 'GET' } }
+  );
+}
+
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
   

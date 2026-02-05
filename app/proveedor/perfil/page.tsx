@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Calendar, Clock, User, Settings, Plus, Trash2, CheckCircle2, XCircle, Phone, Mail, X, Check, CheckCheck, AlertCircle } from 'lucide-react';
+import { Loader2, Calendar, Clock, User, Settings, Plus, Trash2, CheckCircle2, XCircle, Phone, Mail, X, Check, CheckCheck, AlertCircle, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format, parseISO } from 'date-fns';
@@ -237,11 +237,12 @@ export default function ProviderProfilePage() {
         <h1 className="text-3xl font-bold mb-8">Panel del Proveedor</h1>
         
         <Tabs defaultValue="appointments" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="appointments">Citas</TabsTrigger>
             <TabsTrigger value="calendar">Calendario</TabsTrigger>
             <TabsTrigger value="profile">Perfil</TabsTrigger>
             <TabsTrigger value="schedule">Horarios</TabsTrigger>
+            <TabsTrigger value="health-insurance">Obras sociales</TabsTrigger>
           </TabsList>
           
           <TabsContent value="appointments">
@@ -280,6 +281,10 @@ export default function ProviderProfilePage() {
               queryClient={queryClient}
             />
           </TabsContent>
+
+          <TabsContent value="health-insurance">
+            <HealthInsuranceTab token={token} queryClient={queryClient} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -289,15 +294,18 @@ export default function ProviderProfilePage() {
 // Appointments Tab Component
 function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean; token: string }) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateRangeFilter, setDateRangeFilter] = useState<string>('today_and_future'); // Por defecto: solo hoy y futuras
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   const appointments: Appointment[] = data?.appointments || [];
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
 
   const filteredAppointments = appointments.filter((apt: Appointment) => {
     if (statusFilter !== 'all' && apt.status !== statusFilter) return false;
+    if (dateRangeFilter === 'today_and_future' && apt.appointment_date < todayStr) return false;
     if (startDate && apt.appointment_date < startDate) return false;
     if (endDate && apt.appointment_date > endDate) return false;
     return true;
@@ -367,7 +375,7 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <Label htmlFor="status">Estado</Label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -379,6 +387,18 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
                 <SelectItem value="scheduled">Programadas</SelectItem>
                 <SelectItem value="cancelled">Canceladas</SelectItem>
                 <SelectItem value="completed">Completadas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="date-range">Rango de fechas</Label>
+            <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
+              <SelectTrigger id="date-range">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today_and_future">Hoy y futuras</SelectItem>
+                <SelectItem value="all">Todas (incl. pasadas)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -488,6 +508,252 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
                 </Card>
               );
             })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Health Insurance (Obras sociales) Tab
+interface HealthInsuranceItem {
+  id: number;
+  name: string;
+  price: string | null;
+  price_numeric?: number | null;
+  notes?: string | null;
+}
+
+function HealthInsuranceTab({ token, queryClient }: { token: string; queryClient: ReturnType<typeof useQueryClient> }) {
+  const [addName, setAddName] = useState('');
+  const [addPrice, setAddPrice] = useState('');
+  const [addNotes, setAddNotes] = useState('');
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+
+  const { data: list = [], isLoading } = useQuery({
+    queryKey: ['proveedor-health-insurance'],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/health-insurance`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Error al cargar obras sociales');
+      return res.json() as Promise<HealthInsuranceItem[]>;
+    },
+  });
+
+  const addMutation = useMutation({
+    mutationFn: async (body: { name: string; price?: string; notes?: string }) => {
+      const res = await fetch(`${API_BASE}/health-insurance`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Error al agregar');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proveedor-health-insurance'] });
+      queryClient.invalidateQueries({ queryKey: ['health-insurance'] });
+      setAddName('');
+      setAddPrice('');
+      setAddNotes('');
+      toast.success('Obra social agregada');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (body: { currentName: string; name?: string; price?: string; notes?: string }) => {
+      const res = await fetch(`${API_BASE}/health-insurance`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Error al actualizar');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proveedor-health-insurance'] });
+      queryClient.invalidateQueries({ queryKey: ['health-insurance'] });
+      setEditingName(null);
+      toast.success('Obra social actualizada');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const res = await fetch(`${API_BASE}/health-insurance`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Error al eliminar');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proveedor-health-insurance'] });
+      queryClient.invalidateQueries({ queryKey: ['health-insurance'] });
+      toast.success('Obra social eliminada');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const startEdit = (item: HealthInsuranceItem) => {
+    setEditingName(item.name);
+    setEditName(item.name);
+    setEditPrice(item.price || '');
+    setEditNotes(item.notes || '');
+  };
+
+  const saveEdit = () => {
+    if (!editingName) return;
+    updateMutation.mutate({
+      currentName: editingName,
+      name: editName.trim() || undefined,
+      price: editPrice.trim() || undefined,
+      notes: editNotes.trim() || undefined,
+    });
+  };
+
+  const handleDelete = (name: string) => {
+    if (window.confirm(`¿Eliminar la obra social "${name}"? Los pacientes ya no podrán seleccionarla.`)) {
+      deleteMutation.mutate(name);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Obras sociales</CardTitle>
+        <CardDescription>Gestiona la lista de obras sociales que pueden elegir los pacientes al agendar</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Formulario agregar */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <h3 className="font-medium">Agregar obra social</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="add-name">Nombre</Label>
+              <Input
+                id="add-name"
+                value={addName}
+                onChange={(e) => setAddName(e.target.value)}
+                placeholder="Ej: OSDE"
+              />
+            </div>
+            <div>
+              <Label htmlFor="add-price">Precio (opcional)</Label>
+              <Input
+                id="add-price"
+                value={addPrice}
+                onChange={(e) => setAddPrice(e.target.value)}
+                placeholder="Ej: $25.000"
+              />
+            </div>
+            <div>
+              <Label htmlFor="add-notes">Notas (opcional)</Label>
+              <Input
+                id="add-notes"
+                value={addNotes}
+                onChange={(e) => setAddNotes(e.target.value)}
+                placeholder="Ej: excepto plan verde"
+              />
+            </div>
+          </div>
+          <Button
+            onClick={() => {
+              if (!addName.trim()) {
+                toast.error('El nombre es obligatorio');
+                return;
+              }
+              addMutation.mutate({ name: addName.trim(), price: addPrice.trim() || undefined, notes: addNotes.trim() || undefined });
+            }}
+            disabled={addMutation.isPending}
+          >
+            {addMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            <span className="ml-2">Agregar</span>
+          </Button>
+        </div>
+
+        {/* Lista */}
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : list.length === 0 ? (
+          <p className="text-center text-muted-foreground py-6">No hay obras sociales cargadas. Agrega una arriba.</p>
+        ) : (
+          <div className="space-y-2">
+            {list.map((item) => (
+              <div key={item.id ?? item.name}>
+                {editingName === item.name ? (
+                  <div className="flex flex-wrap items-end gap-3 p-4 rounded-lg border bg-muted/50">
+                    <div className="flex-1 min-w-[120px]">
+                      <Label>Nombre</Label>
+                      <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                    </div>
+                    <div className="w-32">
+                      <Label>Precio</Label>
+                      <Input value={editPrice} onChange={(e) => setEditPrice(e.target.value)} placeholder="$" />
+                    </div>
+                    <div className="flex-1 min-w-[120px]">
+                      <Label>Notas</Label>
+                      <Input value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
+                    </div>
+                    <Button size="sm" onClick={saveEdit} disabled={updateMutation.isPending}>
+                      {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      <span className="ml-1">Guardar</span>
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingName(null)} disabled={updateMutation.isPending}>
+                      <X className="h-4 w-4" />
+                      <span className="ml-1">Cancelar</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Card className="p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div>
+                        <span className="font-medium">{item.name}</span>
+                        {item.price && <span className="text-muted-foreground ml-2">— {item.price}</span>}
+                        {item.notes && <span className="text-muted-foreground text-sm block mt-1">{item.notes}</span>}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => startEdit(item)}>
+                          <Pencil className="h-4 w-4" />
+                          <span className="ml-1">Editar</span>
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleDelete(item.name)} disabled={deleteMutation.isPending}>
+                          <Trash2 className="h-4 w-4" />
+                          <span className="ml-1">Eliminar</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </CardContent>

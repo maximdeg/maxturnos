@@ -13,6 +13,23 @@ const updateProfileSchema = z.object({
   whatsapp_phone_number: z.string()
     .refine((phone) => !phone || isValidPhoneNumber(phone), 'Formato de teléfono inválido')
     .optional(),
+  // Alias para compatibilidad con tests y clientes que envían name/phone
+  name: z.string().min(2).optional(),
+  phone: z.string()
+    .refine((phone) => !phone || isValidPhoneNumber(phone), 'Formato de teléfono inválido')
+    .optional(),
+}).transform((data) => {
+  // Mapear alias a campos canónicos
+  const out = { ...data };
+  if (data.name !== undefined) {
+    out.first_name = data.first_name ?? data.name;
+    delete (out as any).name;
+  }
+  if (data.phone !== undefined) {
+    out.whatsapp_phone_number = data.whatsapp_phone_number ?? data.phone;
+    delete (out as any).phone;
+  }
+  return out;
 });
 
 export async function GET(request: NextRequest) {
@@ -76,13 +93,18 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
     logApiRequest('GET', '/api/proveedor/profile', 200, duration);
 
+    const first = hasFirstName ? profile.first_name : null;
+    const last = hasLastName ? profile.last_name : null;
+    const phone = hasWhatsAppPhone ? profile.whatsapp_phone_number : null;
     return NextResponse.json({
       id: profile.id,
       email: profile.email,
       username: profile.username,
-      first_name: hasFirstName ? profile.first_name : null,
-      last_name: hasLastName ? profile.last_name : null,
-      whatsapp_phone_number: hasWhatsAppPhone ? profile.whatsapp_phone_number : null,
+      first_name: first,
+      last_name: last,
+      whatsapp_phone_number: phone,
+      ...(first != null && { name: last ? `${first} ${last}` : first }),
+      ...(phone != null && { phone }),
       email_verified: profile.email_verified,
       created_at: profile.created_at,
     });

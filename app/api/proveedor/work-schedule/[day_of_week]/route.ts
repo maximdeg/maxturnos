@@ -31,7 +31,11 @@ export async function PUT(
   }
 
   const resolvedParams = await params;
-  const { day_of_week } = resolvedParams;
+  // Aceptar "monday" o "Monday" (normalizar capitalización)
+  const dayOfWeekRaw = resolvedParams.day_of_week || '';
+  const day_of_week = validDays.includes(dayOfWeekRaw)
+    ? dayOfWeekRaw
+    : dayOfWeekRaw.charAt(0).toUpperCase() + dayOfWeekRaw.slice(1).toLowerCase();
 
   if (!validDays.includes(day_of_week)) {
     const duration = Date.now() - startTime;

@@ -121,22 +121,22 @@ export default function ProviderPageClient({ provider, username }: ProviderPageC
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
-                className="order-2 lg:order-1 relative"
+                className="order-2 lg:order-1 relative max-h-[calc(100vh-12rem)]"
               >
-                <div className="relative">
+                <div className="relative w-full h-[min(500px,calc(100vh-12rem))] max-h-[calc(100vh-12rem)] overflow-hidden rounded-lg">
                   <img
                     src="/images/maraflaminipic.jpg" 
                     width="500" 
                     height="400"
                     alt="Dermatología"
-                    className="rounded-lg w-full h-full object-cover"
+                    className="rounded-lg w-full h-full object-cover object-center"
                     onError={(e) => {
                       // Si la imagen falla, usar un placeholder
                       (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&size=500&background=ba8c84&color=fff`;
                     }}
                   />
                   {/* Fade to right overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#f7e8e4]"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#f7e8e4] pointer-events-none"></div>
                 </div>
               </motion.div>
 

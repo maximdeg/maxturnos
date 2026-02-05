@@ -9,141 +9,107 @@
   },
   {
     "name": "AMUR",
-    "price": null,
     "notes": "excepto plan verde"
   },
   {
-    "name": "ASOCIACIÓN TRABAJADORES DE FARMACIAS DE SANTA FE",
-    "price": null
+    "name": "ASOCIACIÓN TRABAJADORES DE FARMACIAS DE SANTA FE"
   },
   {
-    "name": "CAJA DE SEGURIDAD SOCIAL PROFESIONALES DEL ARTE DE CURAR",
-    "price": null
+    "name": "CAJA DE SEGURIDAD SOCIAL PROFESIONALES DEL ARTE DE CURAR"
   },
   {
-    "name": "CAJA FORENSE",
-    "price": null
+    "name": "CAJA FORENSE"
   },
   {
-    "name": "CAJA DE INGENIEROS",
-    "price": null
+    "name": "CAJA DE INGENIEROS"
   },
   {
     "name": "CONFERENCIA EPISCOPAL ARGENTINA",
-    "price": null,
     "notes": "MUTUAL DEL CLERO"
   },
   {
-    "name": "CONSEJO DE PROFESIONALES DE CIENCIAS ECONÓMICAS",
-    "price": null
+    "name": "CONSEJO DE PROFESIONALES DE CIENCIAS ECONÓMICAS"
   },
   {
-    "name": "D.A.S.U.TE.N",
-    "price": null
+    "name": "D.A.S.U.TE.N"
   },
   {
     "name": "FEDERADA SALUD",
-    "price": null,
     "notes": "Grupo 1 y Grupo 2 (Excepto GRUPO 3)"
   },
   {
-    "name": "GALENO S.A.",
-    "price": null
+    "name": "GALENO S.A."
   },
   {
-    "name": "GRUPO SAN NICOLÁS",
-    "price": null
+    "name": "GRUPO SAN NICOLÁS"
   },
   {
-    "name": "INTEGRAL SALUD",
-    "price": null
+    "name": "INTEGRAL SALUD"
   },
   {
-    "name": "JERÁRQUICOS SALUD",
-    "price": null
+    "name": "JERÁRQUICOS SALUD"
   },
   {
-    "name": "OBRA SOCIAL DEL PERSONAL DE DIRECCIÓN DE LA SANIDAD LUIS PASTEUR",
-    "price": null
+    "name": "OBRA SOCIAL DEL PERSONAL DE DIRECCIÓN DE LA SANIDAD LUIS PASTEUR"
   },
   {
-    "name": "MEDICUS S.A.",
-    "price": null
+    "name": "MEDICUS S.A."
   },
   {
-    "name": "MUTUAL AGUA Y ENERGÍA ELÉCTRICA DE SANTA FE",
-    "price": null
+    "name": "MUTUAL AGUA Y ENERGÍA ELÉCTRICA DE SANTA FE"
   },
   {
-    "name": "OBRA SOCIAL FUTBOLISTAS",
-    "price": null
+    "name": "OBRA SOCIAL FUTBOLISTAS"
   },
   {
-    "name": "O.S.P.I.F.",
-    "price": null
+    "name": "O.S.P.I.F."
   },
   {
-    "name": "OBRA SOCIAL DEL PODER JUDICIAL DE LA NACIÓN",
-    "price": null
+    "name": "OBRA SOCIAL DEL PODER JUDICIAL DE LA NACIÓN"
   },
   {
-    "name": "OBRA SOCIAL DE PATRONES DE CABOTAJE",
-    "price": null
+    "name": "OBRA SOCIAL DE PATRONES DE CABOTAJE"
   },
   {
-    "name": "OBRA SOCIAL U.N.L.",
-    "price": null
+    "name": "OBRA SOCIAL U.N.L."
   },
   {
-    "name": "O.S.A.P.M.",
-    "price": null
+    "name": "O.S.A.P.M."
   },
   {
-    "name": "O.P.D.E.A.",
-    "price": null
+    "name": "O.P.D.E.A."
   },
   {
-    "name": "O.S.P.E.S.G.A.",
-    "price": null
+    "name": "O.S.P.E.S.G.A."
   },
   {
-    "name": "OBRA SOCIAL PERSONAL DE FARMACIAS",
-    "price": null
+    "name": "OBRA SOCIAL PERSONAL DE FARMACIAS"
   },
   {
-    "name": "OBRA SOCIAL PERSONAL MARÍTIMO",
-    "price": null
+    "name": "OBRA SOCIAL PERSONAL MARÍTIMO"
   },
   {
-    "name": "O.S.T.R.A.C.",
-    "price": null
+    "name": "O.S.T.R.A.C."
   },
   {
-    "name": "POLICIA FEDERAL",
-    "price": null
+    "name": "POLICIA FEDERAL"
   },
   {
-    "name": "PREVENCION SALUD",
-    "price": null
+    "name": "PREVENCION SALUD"
   },
   {
-    "name": "S.A.D.A.I.C.",
-    "price": null
+    "name": "S.A.D.A.I.C."
   },
   {
-    "name": "SERVESALUD",
-    "price": null
+    "name": "SERVESALUD"
   },
   {
-    "name": "SANCOR",
-    "price": null
+    "name": "OMINT"
   },
   {
-    "name": "OMINT",
-    "price": null
+    "name": "SAT"
   },
   {
-    "name": "SAT",
-    "price": null
+    "name": "IAPOS Orden Virtual"
   }
 ]

@@ -97,8 +97,17 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
-    const validationResult = createUnavailableDaySchema.safeParse(body);
+    const body = await request.json() as Record<string, unknown>;
+    // Aceptar { date } o { dates: [...] } / { unavailable_days: [...] } (compatibilidad con tests)
+    const normalizedBody =
+      body.date != null
+        ? body
+        : Array.isArray(body.dates) && body.dates.length > 0
+          ? { date: body.dates[0], is_confirmed: body.is_confirmed ?? false }
+          : Array.isArray(body.unavailable_days) && body.unavailable_days.length > 0
+            ? { date: body.unavailable_days[0], is_confirmed: body.is_confirmed ?? false }
+            : body;
+    const validationResult = createUnavailableDaySchema.safeParse(normalizedBody);
 
     if (!validationResult.success) {
       const duration = Date.now() - startTime;

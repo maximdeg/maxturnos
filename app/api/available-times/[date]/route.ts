@@ -171,9 +171,9 @@ export async function GET(
   const { date } = resolvedParams;
   const searchParams = request.nextUrl.searchParams;
   
-  // Aceptar user_account_id, username, o provider
+  // Aceptar user_account_id, username, provider o providerUsername (alias)
   let userAccountId = parseInt(searchParams.get('user_account_id') || '0');
-  const username = searchParams.get('username') || searchParams.get('provider');
+  const username = searchParams.get('username') || searchParams.get('provider') || searchParams.get('providerUsername');
 
   // Rate limiting
   const rateLimitResponse = await rateLimitMiddleware(

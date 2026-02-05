@@ -43,7 +43,12 @@ export async function POST(
   }
 
   try {
-    const body = await request.json();
+    let body: unknown = {};
+    try {
+      body = await request.json();
+    } catch {
+      // Body vacío o no JSON: usar defaults (cancelled_by = 'patient' requiere token después)
+    }
     const validationResult = cancelSchema.safeParse(body);
     
     if (!validationResult.success) {
@@ -118,12 +123,12 @@ export async function POST(
         );
       }
 
-      // Verificar que puede cancelarse (12 horas antes)
+      // Verificar que puede cancelarse (24 horas antes)
       if (!canCancelAppointment(token)) {
         const duration = Date.now() - startTime;
         logApiRequest('POST', `/api/appointments/${appointmentId}/cancel`, 400, duration);
         return NextResponse.json(
-          { error: 'No se puede cancelar la cita. Debe cancelarse al menos 12 horas antes.' },
+          { error: 'No se puede cancelar la cita. Debe cancelarse al menos 24 horas antes.' },
           { status: 400 }
         );
       }

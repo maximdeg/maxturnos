@@ -334,7 +334,7 @@ const ConfirmationPage = () => {
                                     </Button>
                                 </a>
                                     <p className="text-xs text-yellow-600 mt-2">
-                                        Este enlace es válido hasta 12 horas antes de su cita y es único para su cita.
+                                        Este enlace es válido hasta 24 horas antes de su cita y es único para su cita.
                                     </p>
                                 </div>
                             )}

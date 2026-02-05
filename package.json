@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "setup-db": "node scripts/setup-database.js",
-    "create-test-user": "node scripts/create-test-user.js"
+    "create-test-user": "node scripts/create-test-user.js",
+    "refresh-testsprite-token": "node scripts/refresh-testsprite-token.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
