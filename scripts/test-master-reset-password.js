@@ -20,6 +20,8 @@ const pool = new Pool({
   ssl: sslConfig,
 });
 
+const BASE_URL = process.env.BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
 async function testMasterResetPassword() {
   const client = await pool.connect();
   try {
@@ -30,7 +32,7 @@ async function testMasterResetPassword() {
     const loginPassword = 'SuperAdmin2024!';
 
     console.log('1️⃣ Haciendo login como super_admin...');
-    const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
+    const loginResponse = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -63,7 +65,7 @@ async function testMasterResetPassword() {
     const targetEmail = 'maxdegdev.test@gmail.com';
     const newPassword = 'NewPassword123!';
 
-    const resetResponse = await fetch('http://localhost:3000/api/admin/master-reset-password', {
+    const resetResponse = await fetch(`${BASE_URL}/api/admin/master-reset-password`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

@@ -1,27 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
+type HealthChecks = {
+  server: boolean;
+  database: boolean;
+  env: {
+    jwt_secret: boolean;
+    postgresql_host: boolean;
+    postgresql_database: boolean;
+  };
+  redis?: boolean;
+};
+
 /**
  * Endpoint de Health Check
- * 
+ *
  * Verifica el estado del servidor y sus dependencias:
  * - Estado del servidor
  * - Conexión a base de datos
  * - Variables de entorno críticas
+ * - Redis (solo si UPSTASH_REDIS_REST_URL está definido)
  */
 export async function GET(request: NextRequest) {
   const health: {
     status: 'healthy' | 'unhealthy';
     timestamp: string;
-    checks: {
-      server: boolean;
-      database: boolean;
-      env: {
-        jwt_secret: boolean;
-        postgresql_host: boolean;
-        postgresql_database: boolean;
-      };
-    };
+    checks: HealthChecks;
     errors?: string[];
   } = {
     status: 'healthy',
@@ -42,9 +46,27 @@ export async function GET(request: NextRequest) {
   try {
     await pool.query('SELECT 1');
     health.checks.database = true;
-  } catch (error: any) {
+  } catch (error: unknown) {
     health.status = 'unhealthy';
     health.errors?.push(`Database connection failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  // Verificar Redis (opcional; solo si está configurado)
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      const { Redis } = await import('@upstash/redis');
+      const redis = Redis.fromEnv();
+      const pong = await redis.ping();
+      health.checks.redis = pong === 'PONG';
+      if (!health.checks.redis) {
+        health.status = 'unhealthy';
+        health.errors?.push('Redis ping did not return PONG');
+      }
+    } catch (error: unknown) {
+      health.checks.redis = false;
+      health.status = 'unhealthy';
+      health.errors?.push(`Redis connection failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   // Verificar variables de entorno críticas

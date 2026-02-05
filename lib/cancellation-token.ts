@@ -14,14 +14,16 @@ import { logger } from './logger';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Validar JWT_SECRET pero no lanzar error fatal al cargar el módulo
-// Las funciones verificarán esto y devolverán error apropiado
-if (!JWT_SECRET || JWT_SECRET.length < 32) {
+// En producción, no arrancar sin JWT_SECRET válido
+if (process.env.NODE_ENV === 'production') {
+  if (!JWT_SECRET || JWT_SECRET.length < 32) {
+    const msg = 'JWT_SECRET must be set and at least 32 characters in production. Refusing to start.';
+    logger.error(msg);
+    throw new Error(msg);
+  }
+} else if (!JWT_SECRET || JWT_SECRET.length < 32) {
   logger.warn('JWT_SECRET no está configurado o es muy corto (mínimo 32 caracteres). Los tokens de cancelación no funcionarán.');
 }
-
-// Type assertion para TypeScript - puede ser undefined pero lo manejaremos en las funciones
-const JWT_SECRET_ASSERTED: string = JWT_SECRET || 'temp-secret-min-32-chars-for-dev-only-not-for-production-use';
 
 /**
  * Genera un token de cancelación JWT para una cita

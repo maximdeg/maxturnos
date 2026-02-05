@@ -1,15 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Calendar, Clock, User, Settings, Plus, Trash2, CheckCircle2, XCircle, Phone, Mail, X, Check, CheckCheck, AlertCircle, Pencil } from 'lucide-react';
+import { Loader2, Calendar, Clock, User, Settings, Plus, Trash2, CheckCircle2, XCircle, Phone, Mail, X, Check, CheckCheck, AlertCircle, Pencil, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format, parseISO } from 'date-fns';
 
@@ -232,10 +244,33 @@ export default function ProviderProfilePage() {
   }
 
   return (
-    <div className="min-h-screen gradient-background">
+    <div
+      className="min-h-screen gradient-background"
+      data-testid="provider-dashboard"
+      data-auth="authenticated"
+    >
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Panel del Proveedor</h1>
-        
+
+        {profile?.username && (
+          <Card className="mb-6 p-4">
+            <CardHeader className="p-0 pb-2">
+              <CardTitle className="text-base">Perfil público / Enlace de reserva</CardTitle>
+              <CardDescription>
+                Compartí este enlace con tus pacientes para que agenden citas.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Button asChild variant="outline" size="sm" className="mt-2" aria-label="Ver perfil público y abrir enlace de reserva">
+                <Link href={`/${profile.username}/agendar-visita`}>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Ver perfil público
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <Tabs defaultValue="appointments" className="w-full">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="appointments">Citas</TabsTrigger>
@@ -298,6 +333,8 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
+  const [cancellationSuccessMessage, setCancellationSuccessMessage] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const appointments: Appointment[] = data?.appointments || [];
@@ -329,20 +366,29 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
       return response.json();
     },
     onSuccess: () => {
-      toast.success('Cita cancelada exitosamente. Se envió un mensaje al paciente.');
+      const message = 'Cita cancelada exitosamente. Se envió un mensaje al paciente.';
+      toast.success(message);
+      setCancellationSuccessMessage(message);
+      setTimeout(() => setCancellationSuccessMessage(null), 8000);
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       setCancellingId(null);
+      setConfirmCancelId(null);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Error al cancelar la cita');
       setCancellingId(null);
+      setConfirmCancelId(null);
     },
   });
 
   const handleCancelAppointment = (appointmentId: number) => {
-    if (window.confirm('¿Estás seguro de que deseas cancelar esta cita? Se enviará un mensaje al paciente.')) {
-      setCancellingId(appointmentId);
-      cancelAppointmentMutation.mutate(appointmentId);
+    setConfirmCancelId(appointmentId);
+  };
+
+  const handleConfirmCancel = () => {
+    if (confirmCancelId !== null) {
+      setCancellingId(confirmCancelId);
+      cancelAppointmentMutation.mutate(confirmCancelId);
     }
   };
 
@@ -369,11 +415,33 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
 
   return (
     <Card>
+      <AlertDialog open={confirmCancelId !== null} onOpenChange={(open) => !open && setConfirmCancelId(null)}>
+        <AlertDialogContent aria-describedby="cancel-appointment-description">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Cancelar esta cita?</AlertDialogTitle>
+            <AlertDialogDescription id="cancel-appointment-description">
+              ¿Estás seguro de que deseas cancelar esta cita? Se enviará un mensaje al paciente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, mantener</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCancel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Sí, cancelar cita
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <CardHeader>
         <CardTitle>Lista de Citas</CardTitle>
         <CardDescription>Gestiona todas tus citas</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {cancellationSuccessMessage && (
+          <Alert data-testid="cancellation-success" role="status" className="bg-green-50 border-green-200 text-green-800">
+            <AlertDescription>{cancellationSuccessMessage}</AlertDescription>
+          </Alert>
+        )}
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
@@ -485,6 +553,7 @@ function AppointmentsTab({ data, loading, token }: { data: any; loading: boolean
                         <Button
                           variant="destructive"
                           size="sm"
+                          data-testid={`cancel-appointment-${apt.id}`}
                           onClick={() => handleCancelAppointment(apt.id)}
                           disabled={cancellingId === apt.id || cancelAppointmentMutation.isPending}
                           className="w-full sm:w-auto"

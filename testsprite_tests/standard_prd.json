@@ -1,0 +1,209 @@
+{
+  "meta": {
+    "project": "MaxTurnos Appointment Booking System",
+    "date": "2026-02-04",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "MaxTurnos is an appointment booking platform designed for multi-provider medical services. It enables healthcare professionals to manage their schedules, appointments, and patient bookings efficiently via personalized public profiles and enables patients to self-book, view, and cancel appointments easily without requiring accounts.",
+  "core_goals": [
+    "Provide a seamless online appointment booking experience for patients without requiring phone calls or accounts",
+    "Enable healthcare providers to manage their availability, appointments, and health insurance options in one centralized dashboard",
+    "Ensure secure authentication and authorization for providers and administrators with email verification and JWT-based tokens",
+    "Support token-based cancellation for patients to facilitate easy appointment management",
+    "Integrate optional WhatsApp notifications to enhance communication of appointment confirmations and cancellations",
+    "Maintain data consistency and prevent double bookings with strict constraints and validation",
+    "Offer a responsive, accessible, and performant web interface aligned with Argentinian locale and language"
+  ],
+  "key_features": [
+    "Public landing page explaining how the booking system works with CTAs to register or login",
+    "Personalized provider public profiles at /{username} including profile details and booking links",
+    "Booking flow for patients to select visit type, date, time, and optionally health insurance, with validation and availability filters",
+    "Appointment confirmation pages with secure cancellation via signed tokens",
+    "Provider sign-up and login with email verification and secure password management",
+    "Provider dashboard featuring tabs for appointments, calendar view, profile management, work schedule configuration, and health insurance management",
+    "API endpoints for public access, provider-authenticated actions, and super admin operations such as master password reset",
+    "WhatsApp webhook integration and optional messaging for confirmations and cancellations",
+    "Robust rate limiting, caching, and logging for security, performance, and observability"
+  ],
+  "user_flow_summary": [
+    "Patient visits landing page and navigates to a provider's public profile using a unique username URL",
+    "Patient selects 'Agendar visita', chooses visit and consult/practice type, selects available date and time slot, and submits their information",
+    "Upon successful booking, patient is redirected to the appointment confirmation page with a secure cancellation link (tokenized)",
+    "Provider registers via email and password, receives an email verification link, verifies their email, then logs in using JWT-based authentication",
+    "Provider manages upcoming appointments via a dashboard with filtering and can cancel appointments, triggering optional WhatsApp notifications to patients",
+    "Provider configures their weekly working schedule, unavailable days, and health insurance offerings to customize available booking options",
+    "Patient can view appointment details and cancel appointments themselves with token-based authentication within allowed time constraints"
+  ],
+  "validation_criteria": [
+    "Appointment creation enforces no duplicate bookings for the same client, provider, date, and time when status is scheduled",
+    "Email verification is mandatory for providers before login, enforced via email verification token check",
+    "Cancellation by patient requires a valid cancellation token and can only be done if more than 24 hours remain before appointment time",
+    "Provider routes require valid JWT tokens with verified email status and proper authorization",
+    "Rate limiting is applied on key endpoints such as registration, login, and appointment creation to prevent abuse",
+    "Health insurance options are filtered correctly based on visit type during booking",
+    "Available times respect provider work schedules, unavailable days, current appointments, and hardcoded holidays",
+    "WhatsApp notifications for confirmations and cancellations are sent only when configured and authenticated credentials are present"
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "JavaScript",
+      "React",
+      "Next.js 15",
+      "PostgreSQL",
+      "TailwindCSS",
+      "React Hook Form",
+      "Zod",
+      "Framer Motion",
+      "Lucide React",
+      "Radix UI",
+      "Sonner",
+      "Jose (JWT)",
+      "bcryptjs",
+      "Nodemailer",
+      "Axios",
+      "Upstash Redis/Ratelimit",
+      "Pino (logging)"
+    ],
+    "features": [
+      {
+        "name": "Home / Landing",
+        "description": "Public landing page with features, how it works, benefits, and CTA to provider registration.",
+        "files": [
+          "app/page.tsx",
+          "app/layout.tsx",
+          "app/globals.css"
+        ]
+      },
+      {
+        "name": "Provider public profile",
+        "description": "Provider page by username showing profile and link to book appointment.",
+        "files": [
+          "app/[username]/page.tsx",
+          "app/[username]/ProviderPageClient.tsx",
+          "app/api/provider/[username]/info/route.ts",
+          "app/api/provider/[username]/work-schedule/route.ts"
+        ]
+      },
+      {
+        "name": "Book appointment (agendar visita)",
+        "description": "Client flow to select date, time, fill form and create appointment for a provider.",
+        "files": [
+          "app/[username]/agendar-visita/page.tsx",
+          "components/agendar-visita/AppointmentForm.tsx",
+          "components/agendar-visita/AvailableTimesComponentImproved.tsx",
+          "components/agendar-visita/FooterRoot.tsx",
+          "app/api/available-times/[date]/route.ts",
+          "app/api/appointments/create/route.ts",
+          "app/api/visit-types/route.ts",
+          "app/api/health-insurance/route.ts",
+          "app/api/appointments/date/[date]/route.ts"
+        ]
+      },
+      {
+        "name": "Appointment confirmation / cancel",
+        "description": "View appointment details and cancel via token.",
+        "files": [
+          "app/[username]/cita/[id]/page.tsx",
+          "app/api/appointments/[id]/route.ts",
+          "app/api/appointments/[id]/cancel/route.ts",
+          "lib/cancellation-token.ts"
+        ]
+      },
+      {
+        "name": "Email verification",
+        "description": "Verify user email with token.",
+        "files": [
+          "app/[username]/verificar-email/page.tsx",
+          "app/api/auth/verification-token/route.ts",
+          "app/api/auth/verify-email/route.ts"
+        ]
+      },
+      {
+        "name": "Provider auth (login / register)",
+        "description": "Provider login and registration with email/password.",
+        "files": [
+          "app/proveedor/login/page.tsx",
+          "app/proveedor/register/page.tsx",
+          "app/api/auth/login/route.ts",
+          "app/api/auth/register/route.ts",
+          "lib/auth.ts"
+        ]
+      },
+      {
+        "name": "Provider dashboard / profile",
+        "description": "Provider perfil: profile, calendar, appointments, work schedule, unavailable days, health insurance.",
+        "files": [
+          "app/proveedor/perfil/page.tsx",
+          "app/proveedor/perfil/layout.tsx",
+          "app/api/proveedor/profile/route.ts",
+          "app/api/proveedor/profile/password/route.ts",
+          "app/api/proveedor/calendar/route.ts",
+          "app/api/proveedor/appointments/route.ts",
+          "app/api/proveedor/work-schedule/route.ts",
+          "app/api/proveedor/work-schedule/[day_of_week]/route.ts",
+          "app/api/proveedor/work-schedule/[day_of_week]/slots/route.ts",
+          "app/api/proveedor/work-schedule/slots/[id]/route.ts",
+          "app/api/proveedor/unavailable-days/route.ts",
+          "app/api/proveedor/unavailable-days/[id]/route.ts",
+          "app/api/proveedor/health-insurance/route.ts"
+        ]
+      },
+      {
+        "name": "Admin / master reset password",
+        "description": "Super admin endpoint to reset user password.",
+        "files": [
+          "app/api/admin/master-reset-password/route.ts"
+        ]
+      },
+      {
+        "name": "WhatsApp webhook and notifications",
+        "description": "WhatsApp webhook and sending confirmations/cancellations.",
+        "files": [
+          "app/api/whatsapp/webhook/route.ts",
+          "lib/whatsapp.ts"
+        ]
+      },
+      {
+        "name": "Shared UI components",
+        "description": "Reusable UI: button, card, form, input, label, alert, badge, calendar, popover, select, tabs.",
+        "files": [
+          "components/ui/button.tsx",
+          "components/ui/card.tsx",
+          "components/ui/form.tsx",
+          "components/ui/input.tsx",
+          "components/ui/label.tsx",
+          "components/ui/alert.tsx",
+          "components/ui/badge.tsx",
+          "components/ui/calendar.tsx",
+          "components/ui/popover.tsx",
+          "components/ui/select.tsx",
+          "components/ui/tabs.tsx"
+        ]
+      },
+      {
+        "name": "Database and API utilities",
+        "description": "DB pool, transactions, cache, rate limit, logger, types, user-routes, utils.",
+        "files": [
+          "lib/db.ts",
+          "lib/db-transactions.ts",
+          "lib/cache.ts",
+          "lib/rate-limit.ts",
+          "lib/logger.ts",
+          "lib/types.ts",
+          "lib/user-routes.ts",
+          "lib/utils.ts",
+          "lib/api-client.ts",
+          "lib/email.ts"
+        ]
+      },
+      {
+        "name": "Health check",
+        "description": "API health endpoint.",
+        "files": [
+          "app/api/health/route.ts"
+        ]
+      }
+    ]
+  }
+}

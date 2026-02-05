@@ -131,7 +131,7 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                      <FormLabel>Correo electrónico</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="tu@email.com" {...field} />
                     </FormControl>
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Nombre de usuario</FormLabel>
                     <FormControl>
                       <Input placeholder="mi-username" {...field} />
                     </FormControl>
@@ -206,7 +206,7 @@ export default function RegisterPage() {
 
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">¿Ya tienes cuenta? </span>
-            <Link href="/proveedor/login" className="text-primary hover:underline">
+            <Link href="/proveedor/login" className="text-primary hover:underline font-medium" aria-label="Ir a iniciar sesión">
               Inicia sesión
             </Link>
           </div>

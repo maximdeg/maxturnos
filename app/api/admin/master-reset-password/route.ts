@@ -3,6 +3,7 @@ import { pool } from '@/lib/db';
 import { isSuperAdmin } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 import { apiLogger, logApiRequest } from '@/lib/logger';
+import { rateLimitMiddleware, getRateLimitIdentifier, rateLimiters } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const masterResetPasswordSchema = z.object({
@@ -14,15 +15,23 @@ const masterResetPasswordSchema = z.object({
 /**
  * Endpoint Master para cambiar contraseña de cualquier usuario
  * Solo accesible para super_admin
- * 
+ *
  * Permite cambiar la contraseña de cualquier usuario (proveedor o admin)
  * solo conociendo su email y username (opcional para admins)
  */
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
-  
+
+  const rateLimitResponse = await rateLimitMiddleware(
+    getRateLimitIdentifier(request),
+    rateLimiters.adminMasterReset
+  );
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const authHeader = request.headers.get('authorization');
-  
+
   // Verificar que el usuario autenticado sea super_admin
   const isAdmin = await isSuperAdmin(authHeader);
   

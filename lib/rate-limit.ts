@@ -132,6 +132,20 @@ export const rateLimiters = {
         prefix: '@maxturnos/ratelimit/public-read',
       })
     : null,
+
+  // Admin master reset password (solo super_admin)
+  // Producción: 5 requests/5 minutos | Test: 50 requests/minuto
+  adminMasterReset: redis
+    ? new Ratelimit({
+        redis: redis,
+        limiter: Ratelimit.slidingWindow(
+          isTestMode ? 50 : 5,
+          isTestMode ? '1 m' : '5 m'
+        ),
+        analytics: true,
+        prefix: '@maxturnos/ratelimit/admin/master-reset',
+      })
+    : null,
 };
 
 /**

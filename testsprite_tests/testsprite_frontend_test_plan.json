@@ -1,0 +1,483 @@
+[
+  {
+    "id": "TC001",
+    "title": "Provider Registration with Email Verification",
+    "description": "Test provider registration flow ensuring email verification token is sent and verified before account activation.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to provider registration page."
+      },
+      {
+        "type": "action",
+        "description": "Fill registration form with valid email and password."
+      },
+      {
+        "type": "action",
+        "description": "Submit registration form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify registration success message and email verification token is sent."
+      },
+      {
+        "type": "action",
+        "description": "Attempt login before verifying email."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login is denied due to unverified email."
+      },
+      {
+        "type": "action",
+        "description": "Verify email by using valid verification token link."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify email is marked as verified and login succeeds."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Provider Login with JWT Authentication",
+    "description": "Ensure provider can log in with correct credentials and receives valid JWT token; reject login with incorrect credentials or unverified email.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to provider login page."
+      },
+      {
+        "type": "action",
+        "description": "Input verified provider email and correct password."
+      },
+      {
+        "type": "action",
+        "description": "Submit login form."
+      },
+      {
+        "type": "assertion",
+        "description": "Check login success and valid JWT token issuance."
+      },
+      {
+        "type": "action",
+        "description": "Input verified provider email and incorrect password."
+      },
+      {
+        "type": "action",
+        "description": "Submit login form."
+      },
+      {
+        "type": "assertion",
+        "description": "Check login failure message."
+      },
+      {
+        "type": "action",
+        "description": "Input unverified provider email and correct password."
+      },
+      {
+        "type": "action",
+        "description": "Submit login form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login denied due to unverified email."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Provider Dashboard Access Authorization",
+    "description": "Verify that only authenticated providers with verified email and valid JWT tokens access provider dashboard and related APIs.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to access provider dashboard API without JWT token."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm access is denied with appropriate error."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access provider dashboard API with invalid or expired JWT token."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm access is denied."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access with JWT token of provider with unverified email."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm access denied."
+      },
+      {
+        "type": "action",
+        "description": "Access provider dashboard API with valid verified JWT token."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm access granted and dashboard data returned."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Provider Work Schedule Configuration",
+    "description": "Validate that providers can create, update, and delete weekly work schedule and unavailable days, and the changes reflect in available appointment slots.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as verified provider."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to work schedule configuration."
+      },
+      {
+        "type": "action",
+        "description": "Set working hours for a day of the week."
+      },
+      {
+        "type": "action",
+        "description": "Mark specific dates as unavailable days."
+      },
+      {
+        "type": "action",
+        "description": "Save changes."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify work schedule and unavailable days are saved correctly."
+      },
+      {
+        "type": "action",
+        "description": "Retrieve available appointment slots for affected dates."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm available slots respect work schedule and exclude unavailable days."
+      },
+      {
+        "type": "action",
+        "description": "Modify or delete working hours for a day."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify updated available slots reflect changes accurately."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Patient Booking Appointment Flow with Validations",
+    "description": "Verify patient can book appointment selecting visit type, date, time, and optionally health insurance, with validations and availability filtering applied.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to provider's public profile page."
+      },
+      {
+        "type": "action",
+        "description": "Click 'Agendar visita' to start booking flow."
+      },
+      {
+        "type": "action",
+        "description": "Select visit type and consult/practice type."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify health insurance options are filtered correctly based on visit type."
+      },
+      {
+        "type": "action",
+        "description": "Select available date and time slot."
+      },
+      {
+        "type": "action",
+        "description": "Fill patient information form."
+      },
+      {
+        "type": "action",
+        "description": "Submit booking form."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm appointment is created successfully, respecting provider work schedule, booked slots, and unavailable days."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm prevention of duplicate bookings for same client/provider/date/time."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Booking Attempt with Unavailable Dates and Holiday Constraints",
+    "description": "Verify booking does not allow selection of dates on provider unavailable days or hardcoded holidays, and rejects attempts appropriately.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to booking flow for a provider."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to select a date marked as unavailable by provider."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm such date is not selectable or booking fails with message."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to select a date that is a predefined holiday."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm date not selectable or booking blocked with an appropriate error."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Appointment Confirmation Page and Secure Token Cancellation",
+    "description": "Verify patient can view appointment confirmation and cancel appointment securely using token within allowed timeframe (>24 hours before appointment).",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Complete appointment booking to get confirmation page with cancellation token link."
+      },
+      {
+        "type": "action",
+        "description": "Visit appointment confirmation page using valid appointment ID and token."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appointment details display correctly."
+      },
+      {
+        "type": "action",
+        "description": "Attempt cancellation with valid token more than 24 hours before appointment."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm appointment is cancelled successfully."
+      },
+      {
+        "type": "action",
+        "description": "Attempt cancellation with valid token less than 24 hours before appointment."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm cancellation is rejected due to time constraint."
+      },
+      {
+        "type": "action",
+        "description": "Attempt cancellation with invalid or expired token."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm cancellation is denied."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Provider Appointment Management and Cancellation",
+    "description": "Test provider access to upcoming appointments with filtering options and ability to cancel appointments triggering optional WhatsApp notifications.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a verified provider."
+      },
+      {
+        "type": "action",
+        "description": "Access appointments tab on provider dashboard."
+      },
+      {
+        "type": "action",
+        "description": "Filter appointments by date, status, or patient."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify filtering returns correct results."
+      },
+      {
+        "type": "action",
+        "description": "Cancel an upcoming appointment using provider controls."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm appointment status updated to cancelled."
+      },
+      {
+        "type": "assertion",
+        "description": "If WhatsApp messaging configured, verify notification is sent."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Health Insurance Option Filtering During Booking",
+    "description": "Ensure health insurance options presented to patient during booking are filtered correctly based on selected visit type and provider offerings.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open booking flow for a given provider."
+      },
+      {
+        "type": "action",
+        "description": "Select different visit types one by one."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify only compatible health insurance options are displayed relevant to the selected visit type."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to select invalid or unsupported health insurance option."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure option cannot be selected or booking is rejected."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Rate Limiting on Critical Endpoints",
+    "description": "Test that rate limits are properly enforced on registration, login, and appointment creation endpoints to prevent abuse.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send multiple registration requests rapidly from the same IP."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm rate limiting error response is returned after threshold."
+      },
+      {
+        "type": "action",
+        "description": "Send rapid successive login attempts with valid and invalid credentials."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify API enforces rate limit and blocks requests accordingly."
+      },
+      {
+        "type": "action",
+        "description": "Submit multiple appointment creation requests rapidly for the same provider."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure rate limit is triggered and requests are throttled."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Landing Page Accessibility and Localization",
+    "description": "Verify the landing page content is accessible, responsive, correctly localized to Argentinian Spanish, and displays CTA buttons properly.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open landing page on desktop and mobile devices."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page layout is responsive and content is well-formatted."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI text is localized in Argentinian Spanish."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all Call-To-Action buttons (register, login) are visible and clickable."
+      },
+      {
+        "type": "action",
+        "description": "Use keyboard navigation and test with screen reader."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify accessibility compliance is met (labels, focus management)."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "API Health Check Endpoint",
+    "description": "Verify the health check endpoint returns correct status and response format.",
+    "category": "functional",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send GET request to API health check endpoint."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status code is 200 and response body indicates healthy system."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Admin Master Password Reset Endpoint",
+    "description": "Test super admin endpoint to reset provider password and ensure authorization, success, and failure cases.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to reset provider's password without admin authorization."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm request is denied due to insufficient privileges."
+      },
+      {
+        "type": "action",
+        "description": "Login as super admin and submit password reset request for a provider."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm password reset is successful and provider can login with new password."
+      },
+      {
+        "type": "action",
+        "description": "Submit password reset with invalid provider ID."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm error response for invalid target provider."
+      }
+    ]
+  }
+]

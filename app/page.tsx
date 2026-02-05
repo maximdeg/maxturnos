@@ -106,16 +106,10 @@ export default function HomePage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Link href="/proveedor/login">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-[#ba8c84]/50 text-[#9e7162] hover:bg-[#f7e8e4] px-3 sm:px-5 md:px-6 py-1.5 sm:py-2 rounded-full transition-all duration-300 font-medium text-xs sm:text-sm"
-                >
-                  Ingresar
-                </Button>
-              </Link>
-              <Link href="/proveedor/register">
+              <Button asChild variant="outline" size="sm" className="border-[#ba8c84]/50 text-[#9e7162] hover:bg-[#f7e8e4] px-3 sm:px-5 md:px-6 py-1.5 sm:py-2 rounded-full transition-all duration-300 font-medium text-xs sm:text-sm">
+                <Link href="/proveedor/login" aria-label="Ingresar al panel de proveedor">Ingresar</Link>
+              </Button>
+              <Link href="/proveedor/register" aria-label="Registrarme como proveedor">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button
                     size="sm"
@@ -227,12 +221,12 @@ export default function HomePage() {
               simple para administrar tus citas.
             </motion.p>
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center lg:items-start"
+              className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start items-center lg:items-start"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <Link href="/proveedor/register">
+              <Link href="/proveedor/register" aria-label="Comenzar gratis como proveedor">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button
                     size="lg"
@@ -243,15 +237,12 @@ export default function HomePage() {
                   </Button>
                 </motion.div>
               </Link>
-              <Link href="/proveedor/login">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-[#ba8c84]/50 text-[#9e7162] hover:bg-[#f7e8e4] px-8 py-4 rounded-full transition-all duration-300 font-medium"
-                >
-                  Ya tengo cuenta
-                </Button>
-              </Link>
+              <Button asChild variant="outline" size="lg" className="border-[#ba8c84]/50 text-[#9e7162] hover:bg-[#f7e8e4] px-8 py-4 rounded-full transition-all duration-300 font-medium">
+                <Link href="/proveedor/login" aria-label="Ya tengo cuenta, ir a iniciar sesión">Ya tengo cuenta</Link>
+              </Button>
+              <Button asChild variant="secondary" size="lg" className="bg-white/80 text-[#9e7162] hover:bg-white px-8 py-4 rounded-full transition-all duration-300 font-medium">
+                <Link href="/agendar" aria-label="Agendar cita como paciente">Agendar cita</Link>
+              </Button>
             </motion.div>
           </motion.div>
         </div>
@@ -411,7 +402,7 @@ export default function HomePage() {
               minutos configurarlo.
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/proveedor/register">
+              <Link href="/proveedor/register" aria-label="Comenzar gratis ahora">
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-[#ba8c84] to-[#9e7162] hover:from-[#9e7162] hover:to-[#ba8c84] text-white px-12 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 text-lg font-semibold"

@@ -33,3 +33,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# testsprite generated artifacts
+testsprite_tests/tmp/
+
+# design reference (not production code)
+style reference/
