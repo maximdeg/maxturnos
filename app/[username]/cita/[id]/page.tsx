@@ -299,7 +299,7 @@ export default function AppointmentDetailsPage() {
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">•</span>
-                      <span>PRACTICA: IAPOS 20 bonos + coseguro, UNL + coseguro, resto de obras sociales según convenio (previamente autorizado o solo firma en dorso).</span>
+                      <span>PRACTICA:                       <span>PRACTICA: IAPOS 20 bonos + coseguro, UNL + coseguro, resto de obras sociales según convenio (previamente autorizado o solo firma en dorso).</span>.</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">•</span>
@@ -339,7 +339,7 @@ export default function AppointmentDetailsPage() {
                     <p className="text-sm text-gray-700 mb-2">Pacientes que ya tuvieron una consulta previa y requieren de biopsia, criocirugía o electrocoagulación de lesiones. No es un turno de consulta.</p>
                     <div className="bg-green-50 p-3 rounded">
                       <h5 className="font-medium text-green-800 text-sm mb-1">Qué tiene que traer?</h5>
-                      <p className="text-sm text-green-700">IAPOS 20 bonos + coseguro, UNL + coseguro, resto de obras sociales según convenio (previamente autorizado o solo firma en dorso).</p>
+                      <p className="text-sm text-green-700">IAPOS 18 bonos + coseguro, resto de obras sociales según convenio (previamente autorizado o solo firma en dorso).</p>
                     </div>
                   </div>
                 </div>
