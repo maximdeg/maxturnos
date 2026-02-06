@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "setup-db": "node scripts/setup-database.js",
+    "migrate-health-insurance": "node scripts/migrate-health-insurance-to-db.js",
     "create-test-user": "node scripts/create-test-user.js",
     "refresh-testsprite-token": "node scripts/refresh-testsprite-token.js"
   },

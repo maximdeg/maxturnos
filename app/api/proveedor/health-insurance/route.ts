@@ -1,28 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
 import { requireAuth } from '@/lib/auth';
 import { apiLogger, logApiRequest } from '@/lib/logger';
 import { getOrSetCache, cacheKeys, deleteCache } from '@/lib/cache';
+import { pool } from '@/lib/db';
 import { HealthInsurance } from '@/lib/types';
 
-const FILE_PATH = join(process.cwd(), 'data', 'obras-sociales.json');
-
 async function readObrasSociales(): Promise<HealthInsurance[]> {
-  const content = await readFile(FILE_PATH, 'utf-8');
-  const data = JSON.parse(content);
-  return Array.isArray(data) ? data : [];
+  const result = await pool.query(
+    'SELECT id, name, price, notes FROM health_insurance ORDER BY id'
+  );
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    price: row.price ?? null,
+    price_numeric: null,
+    notes: row.notes ?? null,
+  }));
 }
 
-async function writeObrasSociales(items: { name: string; price?: string | null; notes?: string | null }[]): Promise<void> {
-  const toSave = items.map(({ name, price, notes }) => {
-    const row: Record<string, unknown> = { name };
-    if (price != null && price !== '') row.price = price;
-    if (notes != null && notes !== '') row.notes = notes;
-    return row;
-  });
-  await writeFile(FILE_PATH, JSON.stringify(toSave, null, 2), 'utf-8');
-  await deleteCache(cacheKeys.healthInsurance());
+async function writeObrasSociales(
+  items: { name: string; price?: string | null; notes?: string | null }[]
+): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM health_insurance');
+    for (const item of items) {
+      await client.query(
+        'INSERT INTO health_insurance (name, price, notes) VALUES ($1, $2, $3)',
+        [item.name, item.price ?? null, item.notes ?? null]
+      );
+    }
+    await client.query('COMMIT');
+    await deleteCache(cacheKeys.healthInsurance());
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -42,7 +58,7 @@ export async function GET(request: NextRequest) {
       async () => {
         const raw = await readObrasSociales();
         return raw.map((item, index) => ({
-          id: index + 1,
+          id: item.id ?? index + 1,
           name: item.name,
           price: item.price ?? null,
           price_numeric: item.price_numeric ?? null,
@@ -154,7 +170,10 @@ export async function PUT(request: NextRequest) {
     if (body.price !== undefined) updated.price = typeof body.price === 'string' ? body.price.trim() || null : null;
     if (body.notes !== undefined) updated.notes = typeof body.notes === 'string' ? body.notes.trim() || null : null;
 
-    if (updated.name !== currentName && items.some((i) => i.name.toLowerCase() === updated.name!.toLowerCase() && i.name !== currentName)) {
+    if (
+      updated.name !== currentName &&
+      items.some((i) => i.name.toLowerCase() === updated.name!.toLowerCase() && i.name !== currentName)
+    ) {
       return NextResponse.json(
         { error: 'Ya existe otra obra social con ese nombre' },
         { status: 409 }

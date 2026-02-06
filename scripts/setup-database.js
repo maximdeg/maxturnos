@@ -1,4 +1,6 @@
 const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config({ path: '.env.local' });
 
 const pool = new Pool({
@@ -285,7 +287,22 @@ async function setupDatabase() {
     `);
     console.log('  ✅ client_forms');
 
-    // 10. Poblar datos de referencia
+    // 10. Crear tabla health_insurance (obras sociales) - para Vercel/producción (sin filesystem)
+    console.log('\n🏥 Creando tabla health_insurance...');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS health_insurance (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL,
+        price VARCHAR(255),
+        notes TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_health_insurance_name ON health_insurance (LOWER(name));
+    `);
+    console.log('  ✅ health_insurance');
+
+    // 11. Poblar datos de referencia
     console.log('\n🌱 Poblando datos de referencia...');
     await client.query(`
       INSERT INTO visit_types (name, description) VALUES
@@ -311,6 +328,27 @@ async function setupDatabase() {
       ON CONFLICT (name) DO NOTHING;
     `);
     console.log('  ✅ practice_types');
+
+    // Seed health_insurance desde data/obras-sociales.json si la tabla está vacía
+    const countResult = await client.query('SELECT COUNT(*) FROM health_insurance');
+    if (parseInt(countResult.rows[0].count, 10) === 0) {
+      const jsonPath = path.join(process.cwd(), 'data', 'obras-sociales.json');
+      if (fs.existsSync(jsonPath)) {
+        const raw = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        const items = Array.isArray(raw) ? raw : [];
+        for (const item of items) {
+          const name = item.name?.trim();
+          if (!name) continue;
+          const price = item.price ?? null;
+          const notes = item.notes ?? null;
+          await client.query(
+            'INSERT INTO health_insurance (name, price, notes) VALUES ($1, $2, $3) ON CONFLICT (name) DO NOTHING',
+            [name, price, notes]
+          );
+        }
+        console.log(`  ✅ health_insurance (seed: ${items.length} items)`);
+      }
+    }
 
     await client.query('COMMIT');
     console.log('\n✅ Base de datos configurada exitosamente!');

@@ -50,7 +50,15 @@ Antes del primer despliegue en un entorno nuevo:
    npm run setup-db
    ```
 
-3. (Opcional) Crear el primer super_admin:
+3. Si ya tenés una base de datos en producción (por ejemplo en Vercel) y aún no tenés la tabla `health_insurance`, ejecutá la migración de obras sociales:
+
+   ```bash
+   npm run migrate-health-insurance
+   ```
+
+   Esto crea la tabla `health_insurance` y la puebla desde `data/obras-sociales.json`. Las obras sociales se almacenan en la base de datos (no en archivos) para que funcione en Vercel (filesystem de solo lectura).
+
+4. (Opcional) Crear el primer super_admin:
 
    ```bash
    node scripts/create-super-admin.js
