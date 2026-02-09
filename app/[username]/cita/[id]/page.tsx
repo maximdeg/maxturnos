@@ -164,6 +164,12 @@ export default function AppointmentDetailsPage() {
     ? formatDateWithoutTimezone(appointment.appointment_date)
     : appointment.appointment_date;
 
+  // Mostrar mensaje de seña cuando aplica: práctica particular o consulta primera vez
+  const requiresDeposit35000 = appointment.visit_type_name === 'Practica' && appointment.health_insurance === 'Practica Particular';
+  const requiresDeposit20000 = appointment.visit_type_name === 'Consulta' && appointment.consult_type_name === 'Primera vez';
+  const showDepositMessage = requiresDeposit35000 || requiresDeposit20000;
+  const depositAmount = requiresDeposit35000 ? '$35.000' : '$20.000';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fff3f0] to-[#e8d4cd] flex flex-col">
       {/* Header */}
@@ -269,6 +275,22 @@ export default function AppointmentDetailsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Mensaje de seña para confirmar cita (práctica particular o consulta primera vez) */}
+            {showDepositMessage && appointment.status === 'scheduled' && (
+              <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4 shadow-md">
+                <h3 className="font-semibold text-amber-900 mb-2 flex items-center">
+                  <Info className="w-5 h-5 mr-2 text-amber-600" />
+                  Abonar seña para confirmar la cita
+                </h3>
+                <p className="text-amber-800 text-sm mb-3">
+                  Para confirmar la cita por completo debe abonar una seña de {depositAmount} por transferencia.
+                </p>
+                <p className="text-black font-medium text-sm">
+                  CBU / Alias: <span className="font-semibold text-amber-900">maraflamini</span>
+                </p>
+              </div>
+            )}
 
             {/* Important Information */}
             <div className="bg-white/60 rounded-lg p-4 sm:p-6 shadow-md text-black">

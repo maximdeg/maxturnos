@@ -57,6 +57,7 @@ const formSchema = z.object({
     .min(1, 'Debes seleccionar un horario')
     .regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de hora inválido'),
   notes: z.string().optional(),
+  deposit_acknowledgment: z.boolean().optional(),
 }).refine((data) => {
   if (data.visit_type === '1') {
     return data.consult_type !== undefined && data.consult_type !== '';
@@ -73,6 +74,16 @@ const formSchema = z.object({
 }, {
   message: 'Debes seleccionar un tipo de práctica',
   path: ['practice_type'],
+}).refine((data) => {
+  const needsDeposit35000 = data.visit_type === '2' && data.health_insurance === 'Practica Particular';
+  const needsDeposit20000 = data.visit_type === '1' && data.consult_type === '1';
+  if (needsDeposit35000 || needsDeposit20000) {
+    return data.deposit_acknowledgment === true;
+  }
+  return true;
+}, {
+  message: 'Debes confirmar que entendés el monto de la seña a abonar',
+  path: ['deposit_acknowledgment'],
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -101,10 +112,13 @@ export default function AppointmentForm({ userAccountId, username }: Appointment
       appointment_date: undefined,
       appointment_time: '',
       notes: '',
+      deposit_acknowledgment: false,
     },
   });
 
   const visitType = form.watch('visit_type');
+  const healthInsurance = form.watch('health_insurance');
+  const consultType = form.watch('consult_type');
 
   // Obtener obras sociales
   const { data: healthInsurances = [] } = useQuery({
@@ -265,6 +279,15 @@ export default function AppointmentForm({ userAccountId, username }: Appointment
       form.setValue('appointment_time', '');
     }
   }, [selectedDate, form]);
+
+  // Resetear checkbox de seña cuando ya no aplica ninguna condición
+  const showDeposit35000 = visitType === '2' && healthInsurance === 'Practica Particular';
+  const showDeposit20000 = visitType === '1' && consultType === '1';
+  useEffect(() => {
+    if (!showDeposit35000 && !showDeposit20000) {
+      form.setValue('deposit_acknowledgment', false);
+    }
+  }, [showDeposit35000, showDeposit20000, form]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -548,6 +571,40 @@ export default function AppointmentForm({ userAccountId, username }: Appointment
                 </FormItem>
               )}
             />
+
+            {/* Checkbox de entendimiento de seña (solo cuando aplica) */}
+            {(visitType === '2' && healthInsurance === 'Practica Particular') ||
+            (visitType === '1' && consultType === '1') ? (
+              <FormField
+                control={form.control}
+                name="deposit_acknowledgment"
+                render={({ field }) => {
+                  const showDeposit35000 = visitType === '2' && healthInsurance === 'Practica Particular';
+                  const showDeposit20000 = visitType === '1' && consultType === '1';
+                  const labelText = showDeposit35000
+                    ? 'Entiendo que para confirmar la cita por completo debo abonar una seña de $35.000 por ser una práctica particular.'
+                    : 'Entiendo que para confirmar la cita por completo debo abonar una seña de $20.000 por transferencia por ser una consulta por primera vez.';
+                  return (
+                    <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value === true}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          className="h-4 w-4 mt-0.5 rounded border-input"
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <Label htmlFor={field.name} className="text-black font-medium cursor-pointer">
+                          {labelText}
+                        </Label>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  );
+                }}
+              />
+            ) : null}
 
             {/* Botón de envío */}
             <Button 

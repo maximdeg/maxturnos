@@ -99,6 +99,11 @@ export async function sendWhatsAppMessage(
  * @param appointmentDetails Detalles de la cita
  * @returns Resultado del envío
  */
+const DEPOSIT_ALIAS = 'maraflamini';
+
+/** Texto de política de cancelación incluido en todos los mensajes al paciente */
+const CANCELLATION_POLICY = '\n📋 *Política de cancelación:* Si necesitás cancelar, hacelo con al menos 24 horas de anticipación.';
+
 export async function sendAppointmentConfirmation(
   phoneNumber: string,
   appointmentDetails: {
@@ -115,18 +120,36 @@ export async function sendAppointmentConfirmation(
 ): Promise<WhatsAppResponse> {
   const visitTypeText = appointmentDetails.visitType;
   const subTypeText = appointmentDetails.consultType || appointmentDetails.practiceType || '';
-  
+  const requiresDeposit35000 = appointmentDetails.visitType === 'Practica' && appointmentDetails.healthInsurance === 'Practica Particular';
+  const requiresDeposit20000 = appointmentDetails.visitType === 'Consulta' && appointmentDetails.consultType === 'Primera vez';
+  const requiresDeposit = requiresDeposit35000 || requiresDeposit20000;
+  const depositAmount = requiresDeposit35000 ? '$35.000' : '$20.000';
+
+  const depositBlock = requiresDeposit
+    ? `
+
+⚠️ *Importante – Seña para confirmar la cita*
+La cita no quedará confirmada por completo hasta que abones la seña de ${depositAmount} por transferencia.
+• Alias / CBU: *${DEPOSIT_ALIAS}*
+Una vez abonado, enviá el comprobante de pago a este mismo chat para confirmar tu turno.`
+    : '';
+
+  const introLine = requiresDeposit
+    ? `Tu visita con ${appointmentDetails.providerName} ha sido registrada.`
+    : `Tu visita con ${appointmentDetails.providerName} ha sido confirmada exitosamente.`;
   const message = `¡Hola ${appointmentDetails.patientName}!
 
-Tu visita con ${appointmentDetails.providerName} ha sido confirmada exitosamente.
+${introLine}
 
 📅 Fecha: ${appointmentDetails.date}
 🕐 Hora: ${appointmentDetails.time}
 👨‍⚕️ Tipo: ${visitTypeText}${subTypeText ? ` - ${subTypeText}` : ''}
 🏥 Obra Social: ${appointmentDetails.healthInsurance}
+${depositBlock}
 
 Para ver los detalles de tu cita o cancelarla, visita el siguiente enlace:
 ${appointmentDetails.detailsUrl}
+${CANCELLATION_POLICY}
 
 ¡Te esperamos!`;
 
@@ -155,6 +178,7 @@ Lamentamos informarte que tu cita del ${appointmentDetails.date} a las ${appoint
 
 Por favor, reagenda tu cita visitando:
 ${appointmentDetails.rescheduleUrl}
+${CANCELLATION_POLICY}
 
 Disculpa las molestias.`;
 
