@@ -157,6 +157,39 @@ ${CANCELLATION_POLICY}
 }
 
 /**
+ * Envía recordatorio de cita (30 horas antes)
+ *
+ * @param phoneNumber Número del paciente
+ * @param appointmentDetails Datos de la cita para el mensaje
+ * @returns Resultado del envío
+ */
+export async function sendAppointmentReminder(
+  phoneNumber: string,
+  appointmentDetails: {
+    patientName: string;
+    providerName: string;
+    date: string; // YYYY-MM-DD
+    time: string; // HH:MM
+    detailsUrl: string;
+  }
+): Promise<WhatsAppResponse> {
+  const message = `¡Hola ${appointmentDetails.patientName}!
+
+Recordatorio: tenés una cita con ${appointmentDetails.providerName} en aproximadamente 30 horas.
+
+📅 Fecha: ${appointmentDetails.date}
+🕐 Hora: ${appointmentDetails.time}
+
+Para ver los detalles o cancelar, visitá:
+${appointmentDetails.detailsUrl}
+${CANCELLATION_POLICY}
+
+¡Te esperamos!`;
+
+  return await sendWhatsAppMessage(phoneNumber, message);
+}
+
+/**
  * Envía mensaje de cancelación por proveedor
  * 
  * @param phoneNumber Número de teléfono del paciente
