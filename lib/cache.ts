@@ -17,17 +17,37 @@
 
 import { Redis } from '@upstash/redis';
 import { LRUCache } from 'lru-cache';
+import { shouldUseUpstashRedis } from '@/lib/upstash-availability';
 
-// Configuración de Redis para caché
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? Redis.fromEnv()
-  : null;
+// Redis solo si el host resuelve; tras un fallo de red se anula y se usa LRU en memoria
+let redisClient: Redis | null = shouldUseUpstashRedis() ? Redis.fromEnv() : null;
 
-// Caché en memoria como fallback (solo desarrollo)
 const memoryCache = new LRUCache<string, any>({
-  max: 500, // Máximo 500 entradas
-  ttl: 1000 * 60 * 5, // 5 minutos por defecto
+  max: 500,
+  ttl: 1000 * 60 * 5,
 });
+
+let upstashCacheDisabledLogged = false;
+
+function disableUpstashCacheBackend(context: string, error: unknown): void {
+  if (redisClient === null) {
+    return;
+  }
+  redisClient = null;
+  if (!upstashCacheDisabledLogged) {
+    upstashCacheDisabledLogged = true;
+    console.warn(`[cache] ${context}; usando solo memoria hasta reiniciar el servidor.`, error);
+  }
+}
+
+function setMemoryCache<T>(key: string, value: T, ttlSeconds: number): void {
+  try {
+    const copy = JSON.parse(JSON.stringify(value));
+    memoryCache.set(key, copy, { ttl: ttlSeconds * 1000 });
+  } catch {
+    memoryCache.set(key, value, { ttl: ttlSeconds * 1000 });
+  }
+}
 
 /**
  * Obtiene un valor del caché
@@ -43,8 +63,8 @@ const memoryCache = new LRUCache<string, any>({
  */
 export async function getCache<T>(key: string): Promise<T | null> {
   try {
-    if (redis) {
-      const value = await redis.get(key);
+    if (redisClient) {
+      const value = await redisClient.get(key);
       if (value === null || value === undefined) return null;
       
       // Upstash Redis puede devolver string o ya parseado
@@ -68,8 +88,8 @@ export async function getCache<T>(key: string): Promise<T | null> {
       return value as T | null;
     }
   } catch (error) {
-    console.error('Cache get error:', error);
-    return null;
+    disableUpstashCacheBackend('Upstash falló en get', error);
+    return (memoryCache.get(key) as T | null) ?? null;
   }
 }
 
@@ -91,25 +111,15 @@ export async function setCache<T>(
   ttlSeconds: number = 300
 ): Promise<void> {
   try {
-    if (redis) {
-      // Redis necesita string JSON - asegurarse de serializar correctamente
+    if (redisClient) {
       const serialized = JSON.stringify(value);
-      await redis.setex(key, ttlSeconds, serialized);
+      await redisClient.setex(key, ttlSeconds, serialized);
     } else {
-      // Fallback a memoria - LRU cache puede guardar objetos directamente
-      // Pero para consistencia, guardamos una copia serializada/deserializada
-      try {
-        // Serializar y deserializar para asegurar consistencia
-        const serialized = JSON.parse(JSON.stringify(value));
-        memoryCache.set(key, serialized, { ttl: ttlSeconds * 1000 });
-      } catch (serializeError) {
-        // Si falla la serialización, guardar directamente (para objetos complejos)
-        memoryCache.set(key, value, { ttl: ttlSeconds * 1000 });
-      }
+      setMemoryCache(key, value, ttlSeconds);
     }
   } catch (error) {
-    console.error('Cache set error:', error);
-    // No lanzar error, solo loguear
+    disableUpstashCacheBackend('Upstash falló en set', error);
+    setMemoryCache(key, value, ttlSeconds);
   }
 }
 
@@ -120,13 +130,14 @@ export async function setCache<T>(
  */
 export async function deleteCache(key: string): Promise<void> {
   try {
-    if (redis) {
-      await redis.del(key);
+    if (redisClient) {
+      await redisClient.del(key);
     } else {
       memoryCache.delete(key);
     }
   } catch (error) {
-    console.error('Cache delete error:', error);
+    disableUpstashCacheBackend('Upstash falló en del', error);
+    memoryCache.delete(key);
   }
 }
 
@@ -137,20 +148,22 @@ export async function deleteCache(key: string): Promise<void> {
  */
 export async function deleteCachePattern(pattern: string): Promise<void> {
   try {
-    if (redis) {
-      // Redis SCAN para encontrar claves que coinciden
+    if (redisClient) {
       const keys: string[] = [];
       let cursor: number | string = 0;
-      
+
       do {
-        const result: [number | string, string[]] = await redis.scan(cursor, { match: pattern, count: 100 }) as [number | string, string[]];
+        const result: [number | string, string[]] = (await redisClient.scan(cursor, {
+          match: pattern,
+          count: 100,
+        })) as [number | string, string[]];
         const nextCursor = result[0];
         cursor = typeof nextCursor === 'string' ? parseInt(nextCursor, 10) : nextCursor;
         keys.push(...(result[1] || []));
       } while (cursor !== 0 && String(cursor) !== '0');
-      
+
       if (keys.length > 0) {
-        await redis.del(...keys);
+        await redisClient.del(...keys);
       }
     } else {
       // Para memoria, eliminar todas las claves que coinciden
@@ -161,7 +174,12 @@ export async function deleteCachePattern(pattern: string): Promise<void> {
       }
     }
   } catch (error) {
-    console.error('Cache delete pattern error:', error);
+    disableUpstashCacheBackend('Upstash falló en deletePattern', error);
+    for (const key of memoryCache.keys()) {
+      if (key.includes(pattern.replace('*', ''))) {
+        memoryCache.delete(key);
+      }
+    }
   }
 }
 

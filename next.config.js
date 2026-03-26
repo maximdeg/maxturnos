@@ -1,7 +1,11 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  // Evita que Next use un directorio padre (p. ej. C:\Users\Maxim con otro package-lock) como raíz del workspace
+  outputFileTracingRoot: path.join(__dirname),
   // swcMinify está habilitado por defecto en Next.js 15
   experimental: {
     // Next.js 15 features

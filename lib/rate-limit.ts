@@ -16,12 +16,13 @@
 
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { shouldUseUpstashRedis } from '@/lib/upstash-availability';
 
-// Configuración de Redis para rate limiting
-// En producción, usar Upstash Redis o Redis propio
-const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? Redis.fromEnv()
-  : null;
+// Redis solo si el host de Upstash resuelve (evita timeouts por ENOTFOUND)
+const redis = shouldUseUpstashRedis() ? Redis.fromEnv() : null;
+
+/** Tras un fallo en runtime, no volver a llamar a Upstash en este proceso */
+let upstashRateLimitCircuitOpen = false;
 
 // Detectar modo de prueba
 const isTestMode = process.env.NODE_ENV === 'test' || process.env.TEST_MODE === 'true';
@@ -188,8 +189,8 @@ export async function checkRateLimit(
     // Los límites ya están aumentados en rateLimiters, así que continuar normalmente
   }
 
-  // Si no hay Redis configurado, permitir todas las requests (desarrollo)
-  if (!limiter) {
+  // Sin Redis o el circuito abrió tras un fallo previo de Upstash
+  if (!limiter || upstashRateLimitCircuitOpen) {
     return {
       success: true,
       limit: Infinity,
@@ -198,14 +199,27 @@ export async function checkRateLimit(
     };
   }
 
-  const result = await limiter.limit(identifier);
+  try {
+    const result = await limiter.limit(identifier);
 
-  return {
-    success: result.success,
-    limit: result.limit,
-    remaining: result.remaining,
-    reset: result.reset,
-  };
+    return {
+      success: result.success,
+      limit: result.limit,
+      remaining: result.remaining,
+      reset: result.reset,
+    };
+  } catch (error) {
+    upstashRateLimitCircuitOpen = true;
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[rate-limit] Upstash falló; límite desactivado hasta reiniciar el servidor.', error);
+    }
+    return {
+      success: true,
+      limit: Infinity,
+      remaining: Infinity,
+      reset: Date.now() + 10000,
+    };
+  }
 }
 
 /**

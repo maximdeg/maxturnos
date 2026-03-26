@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
+import { shouldUseUpstashRedis } from '@/lib/upstash-availability';
 
 type HealthChecks = {
   server: boolean;
@@ -51,8 +52,8 @@ export async function GET(request: NextRequest) {
     health.errors?.push(`Database connection failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 
-  // Verificar Redis (opcional; solo si está configurado)
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  // Verificar Redis solo si el host resuelve (misma lógica que caché / rate limit)
+  if (shouldUseUpstashRedis()) {
     try {
       const { Redis } = await import('@upstash/redis');
       const redis = Redis.fromEnv();
